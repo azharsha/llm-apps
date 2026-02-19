@@ -1,0 +1,6 @@
+anthropic
+requests
+python-dotenv
+rich
+jinja2
+python-dateutil
