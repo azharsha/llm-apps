@@ -1,0 +1,9 @@
+anthropic
+yfinance
+pandas
+numpy
+pandas-ta
+python-dotenv
+rich
+jinja2
+markdown
