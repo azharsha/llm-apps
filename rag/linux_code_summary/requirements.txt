@@ -1,0 +1,10 @@
+anthropic
+fastapi
+uvicorn[standard]
+chromadb
+sentence-transformers
+tree-sitter
+tree-sitter-c
+python-dotenv
+pydantic
+streamlit
