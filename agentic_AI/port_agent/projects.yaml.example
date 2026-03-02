@@ -1,0 +1,45 @@
+# port_agent project registry — copy to projects.yaml and edit paths.
+#
+# Each entry defines a named downstream porting target so you can run:
+#   python main.py --project chromeos-6.6 [overrides...]
+#   python main.py --list-projects
+#
+# CLI flags (--upstream, --downstream, --dirs, etc.) always override
+# values from this file when both are supplied.
+
+projects:
+
+  # ── ChromeOS kernel (drivers/gpu/drm sync from upstream) ────────────────
+  chromeos-6.6:
+    upstream_path:        /path/to/linux          # upstream kernel repo
+    upstream_branch:      main
+    downstream_path:      /path/to/chromeos-kernel
+    downstream_branch:    chromeos-6.6
+    dirs:
+      - drivers/gpu/drm
+      - drivers/gpu/drm/i915
+    work_branch_prefix:   port/chromeos-6.6       # branch name = prefix-YYYYMMDD
+    build_cmd:            "make -j$(nproc) drivers/gpu/drm/"
+    # since_tag:          v6.6-rc7               # optional: only commits after this tag
+
+  # ── Android kernel (USB subsystem) ──────────────────────────────────────
+  android-6.1:
+    upstream_path:        /path/to/linux
+    upstream_branch:      main
+    downstream_path:      /path/to/android-kernel
+    downstream_branch:    android13-6.1
+    dirs:
+      - drivers/usb
+    work_branch_prefix:   port/android-6.1-usb
+    build_cmd:            "make -j$(nproc) drivers/usb/"
+    since_tag:            v6.1
+
+  # ── Minimal example (no build command, checkpatch only) ─────────────────
+  vendor-net:
+    upstream_path:        /path/to/linux
+    upstream_branch:      main
+    downstream_path:      /path/to/vendor-kernel
+    downstream_branch:    vendor-stable
+    dirs:
+      - net/core
+      - net/ipv4

@@ -1,0 +1,5 @@
+anthropic
+python-dotenv
+rich
+jinja2
+pyyaml
