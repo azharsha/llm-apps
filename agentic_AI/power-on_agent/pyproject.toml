@@ -1,0 +1,107 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "poagent"
+version = "5.8.0"
+description = "Power-On Diagnostic Agent — autonomous multi-domain board bring-up analysis"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "PoAgent Contributors" },
+]
+keywords = ["board-bringup", "diagnostics", "llm", "embedded", "linux"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: System :: Hardware",
+    "Topic :: Software Development :: Embedded Systems",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: POSIX :: Linux",
+]
+dependencies = [
+    "anthropic>=0.40.0",
+    "paramiko>=3.4.0",
+    "pyserial>=3.5",
+    "tenacity>=8.2.3",
+    "structlog>=24.1.0",
+    "PyYAML>=6.0.1",
+    "keyring>=24.3.1",
+    "pypdf>=4.0.0",
+    "colorama>=0.4.6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "pytest-mock>=3.12",
+    "mypy>=1.8",
+    "ruff>=0.3",
+    "black>=24.1",
+    "types-PyYAML",
+    "types-paramiko",
+]
+fleet = [
+    "tqdm>=4.66.0",
+]
+
+[project.scripts]
+poagent = "poagent.__main__:main"
+poagent-ingest = "poagent.agents.ingester:main"
+
+[project.urls]
+Homepage = "https://github.com/example/poagent"
+Issues = "https://github.com/example/poagent/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["poagent*"]
+
+[tool.setuptools.package-data]
+poagent = [
+    "board/dts/*.dts",
+    "c_probes/*.c",
+    "c_probes/*.sha256",
+    "c_probes/mmio_dump.*",
+    "py.typed",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501", "B008", "B006"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+warn_return_any = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short -q"
+markers = [
+    "unit: unit tests (no board connection)",
+    "integration: requires board or SSH",
+    "slow: slow tests (memtester, fio)",
+]
+
+[tool.coverage.run]
+source = ["poagent"]
+omit = ["tests/*", "poagent/__main__.py"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]

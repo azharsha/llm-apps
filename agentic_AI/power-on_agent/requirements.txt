@@ -1,0 +1,34 @@
+# PoAgent v5.8 runtime dependencies
+# Install: pip install -r requirements.txt
+
+# Anthropic Claude API
+anthropic>=0.40.0
+
+# SSH transport
+paramiko>=3.4.0
+
+# Serial transport
+pyserial>=3.5
+
+# Retry logic
+tenacity>=8.2.3
+
+# Structured logging
+structlog>=24.1.0
+
+# YAML parsing (overlays, fleet CSV, config)
+PyYAML>=6.0.1
+
+# Keyring for secure credential storage
+keyring>=24.3.1
+
+# PDF ingestion (spec parser)
+pypdf>=4.0.0
+
+# Report signing / HMAC (stdlib hmac + hashlib used; no extra dep needed)
+
+# Optional: progress bars for batch mode
+# tqdm>=4.66.0
+
+# Optional: colored terminal output (structlog dev renderer uses this)
+colorama>=0.4.6

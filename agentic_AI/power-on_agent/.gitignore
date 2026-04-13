@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+.env.local
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Mypy / type checking
+.mypy_cache/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Claude Code / local tooling (machine-specific)
+.claude/
+.sixth/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# PoAgent run outputs (don't commit real board data)
+/var/log/poagent/
+runs/
+*.html
+*.json

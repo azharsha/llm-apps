@@ -1,0 +1,191 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Sample DTS for PoAgent: Tiger Lake development board (TGL-UP3)
+ * poagent/board/dts/sample_tgl.dts
+ *
+ * This is a minimal illustrative DTS for testing PoAgent DTS parsing.
+ * It demonstrates the po-agent-properties node schema expected by
+ * poagent/board/dts_parser.py.
+ */
+
+/dts-v1/;
+
+/ {
+	model = "Intel Tiger Lake UP3 Development Board";
+	compatible = "intel,tgl-up3", "intel,tigerlake";
+
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	/*
+	 * PoAgent board descriptor node.
+	 * All po-agent-* properties are parsed by parse_po_agent_properties().
+	 */
+	po-agent-properties {
+		po-agent-board-name = "tgl-up3-dev";
+		po-agent-platform = "x86_64";
+		po-agent-silicon = "tigerlake";
+
+		/*
+		 * Power rails: name, expected voltage (mV), tolerance (%).
+		 * [O-01] Lower bound 100mV for modern SoCs.
+		 */
+		po-agent-rails = "VCC_CORE:1000:5",
+		                 "VCC_SA:1050:5",
+		                 "VCC_IO:1800:5",
+		                 "VCC_DDR:1200:3",
+		                 "V3P3_S0:3300:5",
+		                 "V5P0_S0:5000:5",
+		                 "VCCGT:800:5";
+
+		/*
+		 * PMBus rail assignments: name:bus:addr.
+		 * Bus is I2C bus number, addr is 7-bit hex.
+		 */
+		po-agent-pmbus = "VCC_CORE:0:0x60",
+		                 "VCC_SA:0:0x61";
+
+		/*
+		 * Clock domains: name:required.
+		 */
+		po-agent-clocks = "pll_core:1",
+		                  "pll_ring:1",
+		                  "pll_sa:1",
+		                  "pll_gt:1",
+		                  "xtal_19p2:1",
+		                  "ref_100:0";
+
+		/*
+		 * Clock dependency map for cascade resolver [CG-04].
+		 * Format: parent:child1,child2,...
+		 */
+		po-agent-clock-deps = "xtal_19p2:pll_core,pll_sa,pll_ring",
+		                      "pll_core:compute_memory",
+		                      "pll_sa:highspeed_serial,display_graphics",
+		                      "pll_gt:display_graphics,sensors_misc";
+
+		/*
+		 * Subsystem PCIe devices.
+		 */
+		po-agent-pcie = "nvme0:0000:00:1d.0:NVMe SSD",
+		                "wifi0:0000:00:14.3:Intel Wi-Fi 6 AX201",
+		                "tb0:0000:00:07.0:Thunderbolt 4";
+
+		/*
+		 * Thermal zone thresholds (°C).
+		 */
+		po-agent-thermal = "x86_pkg_temp:95",
+		                   "INT3400 Thermal:80",
+		                   "pch_skylake:85";
+
+		/*
+		 * Kernel version constraint for DTS/sysfs cross-check [SG-07].
+		 */
+		po-agent-kernel-min = "5.15";
+
+		/*
+		 * Gate 5 sysfs paths to verify subsystem presence.
+		 */
+		po-agent-sysfs-check = "/sys/bus/nvme/devices/nvme0",
+		                       "/sys/class/net/eth0",
+		                       "/sys/class/drm/card0";
+
+		/*
+		 * Silicon stepping table [FINAL-S6].
+		 * Format: stepping_id:name (decoded from CPUID leaf 1h EAX[3:0]).
+		 */
+		po-agent-stepping = "1:TGL-B0",
+		                    "2:TGL-B1";
+	};
+
+	/*
+	 * CPU cluster
+	 */
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu0: cpu@0 {
+			device_type = "cpu";
+			compatible = "intel,tigerlake";
+			reg = <0>;
+		};
+
+		cpu1: cpu@1 {
+			device_type = "cpu";
+			compatible = "intel,tigerlake";
+			reg = <1>;
+		};
+
+		cpu2: cpu@2 {
+			device_type = "cpu";
+			compatible = "intel,tigerlake";
+			reg = <2>;
+		};
+
+		cpu3: cpu@3 {
+			device_type = "cpu";
+			compatible = "intel,tigerlake";
+			reg = <3>;
+		};
+	};
+
+	/*
+	 * Memory
+	 */
+	memory@0 {
+		device_type = "memory";
+		reg = <0x0 0x00000000 0x0 0x40000000>,   /* 1 GB at 0x00000000 */
+		      <0x0 0x40000000 0x0 0x40000000>;   /* 1 GB at 0x40000000 */
+	};
+
+	/*
+	 * I2C buses
+	 */
+	i2c0: i2c@fffC8000 {
+		compatible = "intel,lpss-i2c";
+		reg = <0x0 0xfffC8000 0x0 0x1000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		clock-frequency = <400000>;  /* 400kHz */
+
+		/* PMBus power controller */
+		pmic@60 {
+			compatible = "intel,tgl-pmic";
+			reg = <0x60>;
+		};
+	};
+
+	i2c1: i2c@fffC9000 {
+		compatible = "intel,lpss-i2c";
+		reg = <0x0 0xfffC9000 0x0 0x1000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		clock-frequency = <100000>;  /* 100kHz */
+	};
+
+	/*
+	 * SPI
+	 */
+	spi0: spi@fffCA000 {
+		compatible = "intel,lpss-spi";
+		reg = <0x0 0xfffCA000 0x0 0x1000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		flash@0 {
+			compatible = "jedec,spi-nor";
+			reg = <0>;
+			spi-max-frequency = <50000000>;
+		};
+	};
+
+	/*
+	 * Watchdog
+	 */
+	watchdog@1600 {
+		compatible = "intel,tco-wdt";
+		reg = <0x0 0x1600 0x0 0x40>;
+		timeout-sec = <60>;
+	};
+};
