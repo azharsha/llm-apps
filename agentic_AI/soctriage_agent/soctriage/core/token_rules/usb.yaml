@@ -1,0 +1,32 @@
+version: 1
+category: usb
+description: "USB and Thunderbolt/USB4 signals"
+author: SoCTriage
+priority_base: 90
+
+rules:
+
+  - token_type: thunderbolt_event
+    priority: 110
+    match_mode: any
+    patterns:
+      - "thunderbolt"
+      - "USB4"
+      - "tb_switch"
+      - "tb_port"
+      - "TBT:"
+    arch: any
+    providers: any
+
+  - token_type: usb_event
+    priority: 85
+    match_mode: any
+    patterns:
+      - regex: "usb \\d+-\\d+: USB disconnect"
+      - "unable to enumerate"
+      - "xhci_hcd"
+      - "dwc3"
+      - "usb: device not accepting"
+      - "usb reset"
+    arch: any
+    providers: any

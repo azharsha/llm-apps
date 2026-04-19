@@ -1,0 +1,83 @@
+version: 1
+category: firmware
+description: "Firmware, bootloader, secure boot, TEE, module, initrd signals"
+author: SoCTriage
+priority_base: 120
+
+rules:
+
+  - token_type: bootloader_event
+    priority: 160
+    match_mode: any
+    patterns:
+      - "ABL:"
+      - "XBL:"
+      - "SBL:"
+      - "PBL:"
+      - "UEFI:"
+      - "edk2"
+      - "U-Boot"
+    arch: any
+    providers: any
+
+  - token_type: secure_boot_event
+    priority: 145
+    match_mode: any
+    patterns:
+      - "Secure Boot"
+      - "Lockdown:"
+      - "kernel lockdown"
+      - "ima: violation"
+      - "integrity: "
+    arch: any
+    providers: any
+
+  - token_type: tee_event
+    priority: 130
+    match_mode: any
+    patterns:
+      - "tee: failed"
+      - "TrustZone"
+      - "SMC call failed"
+      - "ATF error"
+      - "psci: failed"
+      - "optee"
+    arch: any
+    providers: any
+
+  - token_type: firmware_event
+    priority: 120
+    match_mode: any
+    patterns:
+      - "firmware"
+      - "ucode"
+      - "PSP"
+      - "GuC"
+      - "HuC"
+      - "GSC"
+      - "fw load"
+    arch: any
+    providers: any
+    notes: "Generic firmware load/error events"
+
+  - token_type: module_event
+    priority: 115
+    match_mode: any
+    patterns:
+      - "FATAL: Module"
+      - "Unknown symbol in module"
+      - "module verification failed"
+      - "disagrees about version of symbol"
+    arch: any
+    providers: any
+
+  - token_type: initrd_event
+    priority: 110
+    match_mode: any
+    patterns:
+      - "initrd:"
+      - "unpacking initramfs"
+      - "rootfs image is not initramfs"
+      - "initramfs: "
+    arch: any
+    providers: any

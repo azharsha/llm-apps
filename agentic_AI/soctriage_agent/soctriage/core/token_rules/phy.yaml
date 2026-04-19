@@ -1,0 +1,41 @@
+version: 1
+category: phy
+description: "USB/PCIe/MIPI PHY init and calibration signals"
+author: SoCTriage
+priority_base: 95
+
+rules:
+
+  - token_type: phy_calibration_fail
+    priority: 115
+    match_mode: any
+    patterns:
+      - "PHY calibration failed"
+      - "phy: calibration timeout"
+      - "SERDES cal failed"
+      - "phy calibration error"
+    arch: any
+    providers: any
+
+  - token_type: phy_init_fail
+    priority: 110
+    match_mode: any
+    patterns:
+      - "phy: failed to initialize"
+      - "PHY init failed"
+      - "phy_init returned"
+      - "PHY power on failed"
+    arch: any
+    providers: any
+
+  - token_type: phy_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "phy:"
+      - "PHY:"
+      - "usb phy"
+      - "pcie phy"
+      - "mipi phy"
+    arch: any
+    providers: any

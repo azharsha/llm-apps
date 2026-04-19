@@ -1,0 +1,60 @@
+version: 1
+category: power
+description: "Power management — PM, thermal, voltage regulator, clock signals"
+author: SoCTriage
+priority_base: 85
+
+rules:
+
+  - token_type: thermal_event
+    priority: 100
+    match_mode: any
+    patterns:
+      - "thermal_zone"
+      - "trip point"
+      - "cpu thermal throttled"
+      - "TJ_MAX exceeded"
+      - "thermal: thermal_emergency"
+      - "thermal shutdown"
+    arch: any
+    providers: any
+
+  - token_type: voltage_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "regulator:"
+      - "vreg:"
+      - "PMIC:"
+      - "RPMh"
+      - "undervoltage"
+      - "voltage regulator"
+    arch: any
+    providers: any
+
+  - token_type: clk_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "clk: failed to enable"
+      - "PLL lock failed"
+      - "DPLL"
+      - "unable to set rate"
+      - "clk_prepare_enable"
+      - "clock: failed"
+    arch: any
+    providers: any
+
+  - token_type: power_event
+    priority: 70
+    match_mode: any
+    patterns:
+      - "PM:"
+      - "suspend"
+      - "resume"
+      - "rpm_"
+      - "cpufreq"
+      - "ACPI:"
+    arch: any
+    providers: any
+    notes: "General power management events — suspend/resume/cpufreq"

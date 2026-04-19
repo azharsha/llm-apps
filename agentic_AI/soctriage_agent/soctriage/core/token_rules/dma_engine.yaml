@@ -1,0 +1,41 @@
+version: 1
+category: dma_engine
+description: "DMA engine signals — distinct from IOMMU DMA faults"
+author: SoCTriage
+priority_base: 90
+
+rules:
+
+  - token_type: dma_timeout
+    priority: 115
+    match_mode: any
+    patterns:
+      - "DMA transfer timeout"
+      - "dmaengine: timeout"
+      - "bam_dma: timeout"
+      - "dma: timeout"
+    arch: any
+    providers: any
+
+  - token_type: dma_channel_fail
+    priority: 105
+    match_mode: any
+    patterns:
+      - "DMA channel request failed"
+      - "dma: chan alloc failed"
+      - "dmaengine: no channel"
+      - "dma_request_chan failed"
+    arch: any
+    providers: any
+
+  - token_type: dma_engine_event
+    priority: 88
+    match_mode: any
+    patterns:
+      - "dmaengine:"
+      - "dma-pl330"
+      - "dma-axi"
+      - "qcom-bam-dma"
+      - "dma engine"
+    arch: any
+    providers: any

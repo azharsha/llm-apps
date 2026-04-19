@@ -1,0 +1,40 @@
+version: 1
+category: irq
+description: "Spinlock, workqueue, and concurrency fault signals"
+author: SoCTriage
+priority_base: 90
+
+rules:
+
+  - token_type: spinlock_fault
+    priority: 110
+    match_mode: any
+    patterns:
+      - "BUG: spinlock"
+      - "spinlock already unlocked"
+      - "spinlock recursion"
+      - "spinlock wrong CPU"
+    arch: any
+    providers: any
+
+  - token_type: workqueue_stall
+    priority: 100
+    match_mode: any
+    patterns:
+      - "workqueue: blk_mq_requeue_work hogged"
+      - "workqueue lockup"
+      - "BUG: workqueue leaked lock"
+      - "workqueue: drain timeout"
+    arch: any
+    providers: any
+
+  - token_type: concurrency_fault
+    priority: 85
+    match_mode: any
+    patterns:
+      - "KCSAN:"
+      - "data race"
+      - "BUG: KCSAN"
+      - "KCSAN: race condition"
+    arch: any
+    providers: any

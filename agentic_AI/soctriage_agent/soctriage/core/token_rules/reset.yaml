@@ -1,0 +1,39 @@
+version: 1
+category: reset
+description: "Reset controller signals — assert/deassert failures"
+author: SoCTriage
+priority_base: 100
+
+rules:
+
+  - token_type: reset_assert_fail
+    priority: 120
+    match_mode: any
+    patterns:
+      - "failed to assert reset"
+      - "reset assert timeout"
+      - "reset_control_assert failed"
+    arch: any
+    providers: any
+
+  - token_type: reset_deassert_fail
+    priority: 115
+    match_mode: any
+    patterns:
+      - "failed to deassert reset"
+      - "reset deassert timeout"
+      - "reset: timeout"
+      - "reset_control_deassert failed"
+    arch: any
+    providers: any
+
+  - token_type: reset_ctrl_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "reset_controller"
+      - "deassert reset"
+      - "assert reset"
+      - "reset: "
+    arch: any
+    providers: any

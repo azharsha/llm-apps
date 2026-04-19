@@ -1,0 +1,88 @@
+version: 1
+category: memory
+description: "Memory subsystem — KASAN, OOM, HWPoison, refcount, NUMA, hugetlb"
+author: SoCTriage
+priority_base: 100
+
+rules:
+
+  - token_type: memory_event
+    priority: 115
+    match_mode: any
+    patterns:
+      - "KASAN"
+      - "SLUB"
+      - "EDAC"
+      - "memory error"
+    exclude_patterns:
+      - "KASAN: self-test"
+    arch: any
+    providers: any
+    notes: "General memory subsystem events — KASAN, SLUB, EDAC"
+
+  - token_type: kasan_detail
+    priority: 112
+    match_mode: any
+    patterns:
+      - regex: "(Read|Write) of size \\d+ at addr"
+      - "KASAN: use-after-free"
+      - "KASAN: out-of-bounds"
+      - "KASAN: slab-out-of-bounds"
+      - "KASAN: null-ptr-deref"
+    arch: any
+    providers: any
+
+  - token_type: memory_poison
+    priority: 110
+    match_mode: any
+    patterns:
+      - "Memory failure:"
+      - "HWPoison"
+      - "hwpoison: unrecoverable"
+      - "MCE: Killing"
+    arch: any
+    providers: any
+
+  - token_type: oom_event
+    priority: 108
+    match_mode: any
+    patterns:
+      - "Out of memory:"
+      - "oom-kill:"
+      - "Killed process"
+      - "oom_kill_process"
+      - "memory compaction failed"
+    arch: any
+    providers: any
+
+  - token_type: hugetlb_fault
+    priority: 95
+    match_mode: any
+    patterns:
+      - "hugetlb: allocating a huge page failed"
+      - "hugetlb_fault"
+      - "cannot allocate hugepage"
+    arch: any
+    providers: any
+
+  - token_type: numa_fault
+    priority: 88
+    match_mode: any
+    patterns:
+      - regex: "NUMA: node \\d+"
+      - "node lacks memory"
+      - "NUMA balancing"
+      - "numa_migrate"
+    arch: any
+    providers: any
+
+  - token_type: refcount_fault
+    priority: 85
+    match_mode: any
+    patterns:
+      - "refcount_t: addition on 0"
+      - "refcount_t: underflow"
+      - "refcount_t: overflow"
+      - "refcount_t: saturated"
+    arch: any
+    providers: any

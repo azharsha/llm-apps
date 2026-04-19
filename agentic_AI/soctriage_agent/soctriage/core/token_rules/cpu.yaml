@@ -1,0 +1,102 @@
+version: 1
+category: cpu
+description: "CPU architecture, scheduling, SIMD, and speculation signals"
+author: SoCTriage
+priority_base: 100
+
+rules:
+
+  - token_type: cpu_hotplug
+    priority: 130
+    match_mode: any
+    patterns:
+      - regex: "CPU \\d+: died"
+      - regex: "CPU \\d+ is now offline"
+      - "smpboot: CPU"
+      - "CPU online"
+      - "CPU offline"
+    arch: any
+    providers: any
+
+  - token_type: preempt_fault
+    priority: 120
+    match_mode: any
+    patterns:
+      - "BUG: scheduling while atomic"
+      - "BUG: sleeping function called from invalid context"
+      - "might sleep"
+    arch: any
+    providers: any
+
+  - token_type: oops_arm64_specific
+    priority: 118
+    match_mode: any
+    patterns:
+      - "Bad mode in"
+      - "SError Interrupt"
+      - "Synchronous Abort handler"
+      - "Unhandled fault:"
+    arch: arm64
+    providers: any
+
+  - token_type: sched_stall
+    priority: 115
+    match_mode: any
+    patterns:
+      - "sched: RT throttling activated"
+      - "task_wdt: BUG"
+      - "RT throttling"
+    arch: any
+    providers: any
+
+  - token_type: cpu_idle_fail
+    priority: 110
+    match_mode: any
+    patterns:
+      - "cpuidle: failed to enter"
+      - "CPU stuck in idle"
+      - "cpuidle: failed"
+    arch: any
+    providers: any
+
+  - token_type: simd_fault
+    priority: 105
+    match_mode: any
+    patterns:
+      - "trap: invalid opcode"
+      - "BUG: invalid FPU state"
+      - "kernel: trap invalid opcode"
+    arch: any
+    providers: any
+
+  - token_type: speculation_fault
+    priority: 100
+    match_mode: any
+    patterns:
+      - "Spectre v2"
+      - "MDS CPU bug"
+      - "RETPOLINE"
+      - "Speculative Store Bypass"
+      - "L1TF"
+    arch: any
+    providers: any
+
+  - token_type: priority_inversion
+    priority: 95
+    match_mode: any
+    patterns:
+      - "rtmutex: deadlock detected"
+      - "PI-futex"
+      - "priority inversion"
+    arch: any
+    providers: any
+
+  - token_type: context_switch_fault
+    priority: 90
+    match_mode: any
+    patterns:
+      - "bad RSP value"
+      - "corrupt stack detected in"
+      - "kernel stack overflow"
+    arch: any
+    providers: any

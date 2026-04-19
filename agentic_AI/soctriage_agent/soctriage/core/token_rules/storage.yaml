@@ -1,0 +1,55 @@
+version: 1
+category: storage
+description: "UFS, eMMC, NVMe, and generic I/O error signals"
+author: SoCTriage
+priority_base: 90
+
+rules:
+
+  - token_type: nvme_event
+    priority: 110
+    match_mode: any
+    patterns:
+      - "nvme"
+      - "NVMe I/O"
+      - "nvme_reset_work"
+      - "nvme: controller is down"
+      - "nvme: I/O"
+    arch: any
+    providers: any
+
+  - token_type: ufs_event
+    priority: 105
+    match_mode: any
+    patterns:
+      - "ufshcd:"
+      - "UFS:"
+      - "ufs_qcom:"
+      - "UFS link startup failed"
+      - "ufshci"
+    arch: any
+    providers: any
+
+  - token_type: emmc_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - regex: "mmc\\d+:"
+      - "mmcblk"
+      - "sdhci:"
+      - "eMMC"
+      - "mmc: error"
+    arch: any
+    providers: any
+
+  - token_type: io_error
+    priority: 75
+    match_mode: any
+    patterns:
+      - "I/O error"
+      - "blk_update_request"
+      - "SCSI error"
+      - "I/O timeout"
+      - "end_request: I/O error"
+    arch: any
+    providers: any

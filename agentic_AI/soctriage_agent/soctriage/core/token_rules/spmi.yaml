@@ -1,0 +1,40 @@
+version: 1
+category: spmi
+description: "Qualcomm SPMI bus and PMIC signals"
+author: SoCTriage
+priority_base: 105
+
+rules:
+
+  - token_type: spmi_bus_error
+    priority: 115
+    match_mode: any
+    patterns:
+      - "SPMI transaction failed"
+      - "spmi: arbiter not ready"
+      - "SPMI timeout"
+      - "spmi_pmic_arb: timeout"
+    arch: arm64
+    providers: [qualcomm]
+
+  - token_type: spmi_pmic_event
+    priority: 110
+    match_mode: any
+    patterns:
+      - "pm8998"
+      - "pmi8998"
+      - "pm660"
+      - "pm8150"
+      - "pm8350"
+    arch: arm64
+    providers: [qualcomm]
+
+  - token_type: spmi_event
+    priority: 100
+    match_mode: any
+    patterns:
+      - "spmi:"
+      - "spmi-pmic-arb:"
+      - "qcom-spmi"
+    arch: any
+    providers: [qualcomm]

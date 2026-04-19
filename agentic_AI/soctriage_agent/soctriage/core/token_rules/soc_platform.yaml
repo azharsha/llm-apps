@@ -1,0 +1,77 @@
+version: 1
+category: soc_platform
+description: "SoC platform signals — GIC, watchdog, ACPI, MCE, IRQ, NMI"
+author: SoCTriage
+priority_base: 110
+
+rules:
+
+  - token_type: wdt_event
+    priority: 140
+    match_mode: any
+    patterns:
+      - "Watchdog:"
+      - "WDOG:"
+      - "watchdog bark"
+      - "watchdog bite"
+      - "QCOM watchdog"
+      - "watchdog: Hardware watchdog"
+    arch: any
+    providers: any
+
+  - token_type: mce_error
+    priority: 130
+    match_mode: any
+    patterns:
+      - "mce: [Hardware Error]"
+      - "Machine check events logged"
+      - "MCE"
+      - "CMCI"
+    arch: x86_64
+    providers: any
+
+  - token_type: nmi_event
+    priority: 108
+    match_mode: any
+    patterns:
+      - "Uhhuh. NMI received"
+      - "dazed and confused"
+      - "NMI: IOCK error"
+    arch: any
+    providers: any
+
+  - token_type: irq_error
+    priority: 105
+    match_mode: any
+    patterns:
+      - regex: "do_IRQ: .*No irqhandler"
+      - "IRQ storm"
+      - "nobody cared"
+      - "Disabling IRQ"
+      - "irq flood"
+    arch: any
+    providers: any
+
+  - token_type: gic_event
+    priority: 110
+    match_mode: any
+    patterns:
+      - "GIC:"
+      - "gicv3"
+      - "spurious irq"
+      - "GIC maintenance interrupt"
+      - "gic: cpu"
+    arch: any
+    providers: any
+
+  - token_type: acpi_event
+    priority: 100
+    match_mode: any
+    patterns:
+      - "ACPI Error:"
+      - "ACPI Exception:"
+      - "AE_NOT_FOUND"
+      - "Method execution failed"
+      - "ACPI BIOS Error"
+    arch: any
+    providers: any

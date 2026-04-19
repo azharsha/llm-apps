@@ -1,0 +1,40 @@
+version: 1
+category: rpmsg
+description: "Inter-processor messaging (rpmsg/glink) signals"
+author: SoCTriage
+priority_base: 95
+
+rules:
+
+  - token_type: rpmsg_ipc_error
+    priority: 105
+    match_mode: any
+    patterns:
+      - "rpmsg: timeout waiting for"
+      - "rpmsg: send failed"
+      - "glink: send timeout"
+      - "rpmsg_send failed"
+    arch: any
+    providers: any
+
+  - token_type: rpmsg_channel_fail
+    priority: 100
+    match_mode: any
+    patterns:
+      - "rpmsg: channel creation failed"
+      - "glink: ch open failed"
+      - "rpmsg channel"
+      - "rpmsg: no endpoint"
+    arch: any
+    providers: any
+
+  - token_type: rpmsg_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "rpmsg:"
+      - "rpmsg_core"
+      - "rpmsg_glink"
+      - "glink:"
+    arch: any
+    providers: any

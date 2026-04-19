@@ -1,0 +1,68 @@
+version: 1
+category: interconnect
+description: "PCIe, AXI/NOC, SMMU, DMA and CRC interconnect fault signals"
+author: SoCTriage
+priority_base: 100
+
+rules:
+
+  - token_type: smmu_fault
+    priority: 125
+    match_mode: any
+    patterns:
+      - "arm-smmu:"
+      - "arm-smmu-v3:"
+      - "SMMU context fault"
+      - "unhandled context fault"
+      - "iommu fault"
+    arch: any
+    providers: any
+
+  - token_type: pcie_error
+    priority: 130
+    match_mode: any
+    patterns:
+      - "pcieport: AER"
+      - "PCIe Bus Error"
+      - "Malformed TLP"
+      - "ECRC"
+      - "aer_irq"
+      - "pci: AER"
+    arch: any
+    providers: any
+
+  - token_type: axi_fault
+    priority: 120
+    match_mode: any
+    patterns:
+      - "axi: interconnect error"
+      - "NOC error"
+      - "SNoC"
+      - "BIMC"
+      - "LLCC"
+      - "interconnect error"
+    arch: any
+    providers: any
+
+  - token_type: crc_error
+    priority: 110
+    match_mode: any
+    patterns:
+      - "CRC error"
+      - "link training failed"
+      - "SERDES"
+      - "PHY error"
+      - "CRC mismatch"
+    arch: any
+    providers: any
+
+  - token_type: dma_fault
+    priority: 90
+    match_mode: any
+    patterns:
+      - "DMA-API: device driver failed"
+      - "swiotlb buffer full"
+      - "iommu: Failed to map"
+      - "dma mapping error"
+    arch: any
+    providers: any

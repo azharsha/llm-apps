@@ -1,0 +1,114 @@
+version: 1
+category: gpu
+description: "GPU/DRM subsystem — reset, timeout, sync fence, GEM, CP, display, encoder"
+author: SoCTriage
+priority_base: 100
+
+rules:
+
+  - token_type: reset_event
+    priority: 130
+    match_mode: any
+    patterns:
+      - "GPU reset"
+      - "amdgpu: gpu recovery"
+      - regex: "i915.*GPU HANG"
+      - "GPU hang recovery"
+      - "kgsl: gpu reset"
+    arch: any
+    providers: any
+
+  - token_type: timeout_event
+    priority: 120
+    match_mode: any
+    patterns:
+      - "ring timeout"
+      - "fence timeout"
+      - "job timed out"
+      - "command timed out"
+      - "GPU job timed out"
+      - "CS timed out"
+    arch: any
+    providers: any
+
+  - token_type: gfx_cp_event
+    priority: 110
+    match_mode: any
+    patterns:
+      - "CP_RB_RPTR"
+      - "CP_IB1_BASE"
+      - "ME_CNTL"
+      - "CP_ME_STATUS"
+      - "GRBM_STATUS"
+      - "CP_STALLED"
+    arch: any
+    providers: any
+
+  - token_type: sync_fence_event
+    priority: 115
+    match_mode: any
+    patterns:
+      - "dma_fence:"
+      - "sync_file"
+      - "dma-fence"
+      - "fence already signaled"
+    arch: any
+    providers: any
+
+  - token_type: gem_event
+    priority: 105
+    match_mode: any
+    patterns:
+      - "GEM:"
+      - "ttm_bo"
+      - "gem object"
+      - "GEM object lookup failed"
+      - "drm_gem_object"
+    arch: any
+    providers: any
+
+  - token_type: gpu_event
+    priority: 100
+    match_mode: any
+    patterns:
+      - "amdgpu"
+      - "i915"
+      - "nouveau"
+      - "kgsl"
+      - "drm/amd"
+      - "drm/i915"
+      - "[drm]"
+    exclude_patterns:
+      - regex: "^WARNING:"
+      - regex: "^BUG:"
+      - regex: "^Oops:"
+    arch: any
+    providers: any
+    notes: "Generic DRM/GPU event — catch-all for GPU subsystem lines"
+
+  - token_type: display_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "DPU:"
+      - "MDP:"
+      - "CRTC"
+      - "connector status"
+      - "drm_crtc"
+      - "display underflow"
+    arch: any
+    providers: any
+
+  - token_type: encoder_event
+    priority: 75
+    match_mode: any
+    patterns:
+      - "VCN:"
+      - "VCE:"
+      - "UVD:"
+      - "video encoder"
+      - "codec timeout"
+      - "HEVC"
+      - "H264"
+    arch: any
+    providers: any

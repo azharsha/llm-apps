@@ -1,0 +1,40 @@
+version: 1
+category: gpio_pinctrl
+description: "GPIO and pin controller signals"
+author: SoCTriage
+priority_base: 90
+
+rules:
+
+  - token_type: pinmux_conflict
+    priority: 110
+    match_mode: any
+    patterns:
+      - "pin already requested"
+      - "pin conflict"
+      - "could not get pinctrl"
+      - "pinmux: pin conflict"
+    arch: any
+    providers: any
+
+  - token_type: pinctrl_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "pinctrl:"
+      - "pin-controller"
+      - "pinmux"
+      - "pinctrl_select_state"
+    arch: any
+    providers: any
+
+  - token_type: gpio_event
+    priority: 85
+    match_mode: any
+    patterns:
+      - regex: "gpio: "
+      - regex: "gpio-\\d+"
+      - "GPIO request failed"
+      - "gpiod_"
+    arch: any
+    providers: any

@@ -1,0 +1,39 @@
+version: 1
+category: remoteproc
+description: "Remote processor / DSP subsystem signals (generic)"
+author: SoCTriage
+priority_base: 100
+
+rules:
+
+  - token_type: remoteproc_crash
+    priority: 110
+    match_mode: any
+    patterns:
+      - "remoteproc: crash detected"
+      - "rproc: crash"
+      - "remoteproc crashed"
+      - "rproc coredump"
+    arch: any
+    providers: any
+
+  - token_type: remoteproc_fw_fail
+    priority: 105
+    match_mode: any
+    patterns:
+      - "remoteproc: failed to load"
+      - "rproc: firmware not available"
+      - "rproc: failed to find"
+      - "remote processor firmware"
+    arch: any
+    providers: any
+
+  - token_type: remoteproc_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "remoteproc"
+      - "rproc:"
+      - "remote processor"
+    arch: any
+    providers: any
