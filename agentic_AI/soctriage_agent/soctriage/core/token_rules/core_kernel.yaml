@@ -1,0 +1,179 @@
+version: 1
+category: core_kernel
+description: "Core Linux kernel panic, oops, call trace, register, lockup, and warning signals"
+author: SoCTriage
+priority_base: 100
+
+rules:
+
+  - token_type: panic
+    priority: 120
+    match_mode: any
+    patterns:
+      - "Kernel panic"
+      - "BUG: kernel NULL pointer dereference"
+      - "general protection fault"
+      - "double fault"
+      - "stack-protector: Kernel stack is corrupted"
+    arch: any
+    providers: any
+    notes: "Kernel panic and fatal BUG signals"
+
+  - token_type: lockup_soft
+    priority: 118
+    match_mode: any
+    patterns:
+      - "watchdog: BUG: soft lockup"
+      - "BUG: soft lockup"
+    arch: any
+    providers: any
+
+  - token_type: lockup_hard
+    priority: 118
+    match_mode: any
+    patterns:
+      - "NMI watchdog: Watchdog detected hard LOCKUP"
+      - "Watchdog detected hard LOCKUP"
+    arch: any
+    providers: any
+
+  - token_type: deadlock
+    priority: 117
+    match_mode: any
+    patterns:
+      - "WARNING: possible circular locking dependency"
+      - "WARNING: HARDIRQ-safe -> HARDIRQ-unsafe"
+      - "DEADLOCK"
+    arch: any
+    providers: any
+
+  - token_type: stack_overflow
+    priority: 117
+    match_mode: any
+    patterns:
+      - "corrupted stack end detected"
+      - "Stack segment fault"
+      - "Thread overran stack"
+    arch: any
+    providers: any
+
+  - token_type: rcu_stall
+    priority: 116
+    match_mode: any
+    patterns:
+      - "INFO: rcu_sched self-detected stall"
+      - "rcu: INFO: rcu_preempt detected stalls"
+      - "rcu_sched kthread starved"
+    arch: any
+    providers: any
+
+  - token_type: hung_task
+    priority: 116
+    match_mode: any
+    patterns:
+      - regex: "INFO: task .* blocked for more than"
+      - "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
+    arch: any
+    providers: any
+
+  - token_type: oops_header
+    priority: 115
+    match_mode: any
+    patterns:
+      - "Oops:"
+      - "Oops - "
+      - "Unable to handle kernel"
+    arch: any
+    providers: any
+
+  - token_type: call_trace_header
+    priority: 110
+    match_mode: any
+    patterns:
+      - "Call Trace:"
+      - "Call trace:"
+    arch: any
+    providers: any
+
+  - token_type: call_trace_frame
+    priority: 105
+    match_mode: context
+    patterns:
+      - regex: "^\\s+\\[<[0-9a-f]+>\\]"
+      - regex: "^\\s+[0-9a-f]+ [0-9a-f]+ [0-9a-f]+"
+    context_before:
+      window: 30
+      must_contain_type: [call_trace_header]
+    arch: any
+    providers: any
+
+  - token_type: register_dump
+    priority: 100
+    match_mode: any
+    patterns:
+      - regex: "^RIP:"
+      - regex: "^RSP:"
+      - regex: "^R[ABCD]X:"
+      - regex: "^CR[23]:"
+      - regex: "^CS:"
+      - regex: "^FS:"
+    arch: x86_64
+    providers: any
+
+  - token_type: register_arm64
+    priority: 100
+    match_mode: any
+    patterns:
+      - regex: "^pc :"
+      - regex: "^lr :"
+      - regex: "^sp :"
+      - "ESR_EL1"
+      - "FAR_EL1"
+      - regex: "^x[0-9]{1,2}:"
+    arch: arm64
+    providers: any
+
+  - token_type: warning
+    priority: 80
+    match_mode: any
+    patterns:
+      - "WARNING:"
+      - "WARN_ON"
+      - "WARNING at"
+    exclude_patterns:
+      - "WARNING: possible circular locking"
+      - "WARNING: HARDIRQ-safe"
+    arch: any
+    providers: any
+    notes: "Kernel WARNING — excludes circular locking (covered by deadlock)"
+
+  - token_type: separator
+    priority: 60
+    match_mode: any
+    patterns:
+      - "---[ cut here ]---"
+      - "---[ end trace"
+      - regex: "^={10,}"
+      - regex: "^-{10,}"
+    arch: any
+    providers: any
+
+  - token_type: info
+    priority: 40
+    match_mode: any
+    patterns:
+      - "Linux version"
+      - regex: "^\\[\\s*\\d+\\.\\d+\\]"
+      - regex: "^<[0-9]>"
+    arch: any
+    providers: any
+    notes: "Standard dmesg info lines"
+
+  - token_type: unknown
+    priority: 1
+    match_mode: any
+    patterns:
+      - regex: ".*"
+    arch: any
+    providers: any
+    notes: "Catch-all fallback — always last"
