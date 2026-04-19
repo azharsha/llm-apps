@@ -1,0 +1,10 @@
+Linux version 5.15.0-qcom
+[    0.000000] Qualcomm SDM845 Snapdragon 845 SoC
+[    0.000000] qcom: msm bus scaling initialized
+[    1.000000] ufshcd: UFS controller initialized
+[    1.100000] qmp-phy: PHY calibration failed at temperature -15C
+[    1.100001] phy_calibration_fail: UFS QMP PHY init error -ETIMEDOUT
+[    1.100002] ufshcd: UFS link startup failed
+[    1.100003] ufs_event: UFS error — link down after PHY failure
+[    1.200000] ufshcd: error handler invoked
+[    1.200001] ufshcd: ufshcd_host_reset_and_restore failed

@@ -1,0 +1,10 @@
+Linux version 6.5.0-generic
+[    0.000000] Intel Ponte Vecchio Xe HPC initialized
+[    0.000000] i915: xe driver SR-IOV VF support enabled
+[    1.000000] i915: PCIe link width: x16 Gen4
+[    2.000000] i915: Initializing 32 VF instances
+[    5.000000] i915: VF reset storm detected — 32 VFs triggering simultaneous reset
+[    5.100000] pcie_error: AER: corrected error received from 0000:01:00.0
+[    5.200000] i915: SR-IOV VF reset loop — limiting to 16 VFs
+[    5.300000] i915: reset_event: engine rcs0 reset
+[   10.000000] i915: WARNING: VF count exceeds recommended maximum

@@ -1,25 +1,311 @@
+from __future__ import annotations
 from typing import Any
+from soctriage.core.soc_provider import HangRule
 
 INTEL_IP_BLOCKS: list[str] = [
-    "GUC",      # Graphics Microcontroller — command submission
-    "HUC",      # HEVC/AVC Microcontroller — media firmware auth
-    "GT",       # Graphics Tile — render engine
-    "RENDER",   # 3D/Compute pipeline
-    "BLITTER",  # BLT engine
-    "MEDIA",    # Video decode/encode
-    "DISPLAY",  # Display engine (pipe A/B/C, transcoder)
-    "LMEM",     # Local memory (Xe HP+)
-    "GGTT",     # Global GTT — address translation
-    "PCIe",     # PCIe root port / AER
-    "TBT",      # Thunderbolt host controller
-    "USB4",     # USB4 fabric
-    "PMC",      # Power Management Controller
-    "GSC",      # Graphics Security Controller (Xe2+)
-    "SAMedia",  # Standalone media tile (Meteor Lake+)
+    "GUC", "HUC", "GT", "RENDER", "BLITTER", "MEDIA",
+    "DISPLAY", "LMEM", "GGTT", "PCIe", "TBT", "USB4", "PMC", "GSC", "SAMedia",
 ]
 
-IP_PATTERNS:   dict[str, list[tuple[str, float]]] = {}
-CASCADE_GRAPH: dict[str, list[str]]               = {}
-PLAYBOOK:      dict[str, dict[str, Any]]          = {}
-REGISTER_MAPS: dict[str, dict[int, str]]          = {}
-HANG_RULES:    list[Any]                          = []
+# (token_type, raw_substring, ip_block, confidence, subsystem)
+# Empty raw_substring "" means match any raw
+CLASSIFY_RULES: list[tuple[str, str, str, float, str]] = [
+    ("firmware_event", "GuC",          "GUC",     0.95, "firmware"),
+    ("firmware_event", "HuC",          "HUC",     0.95, "firmware"),
+    ("firmware_event", "GSC",          "GSC",     0.95, "firmware"),
+    ("gpu_event",      "gfx_0",        "RENDER",  0.90, "gpu"),
+    ("gpu_event",      "rcs0",         "RENDER",  0.90, "gpu"),
+    ("gpu_event",      "bcs0",         "BLITTER", 0.88, "gpu"),
+    ("gpu_event",      "vcs0",         "MEDIA",   0.88, "gpu"),
+    ("gpu_event",      "vcs1",         "MEDIA",   0.88, "gpu"),
+    ("gpu_event",      "vecs0",        "MEDIA",   0.88, "gpu"),
+    ("reset_event",    "GPU HANG",     "RENDER",  0.85, "gpu"),
+    ("reset_event",    "reset",        "GT",      0.75, "gpu"),
+    ("intel_gtt_event","GGTT",         "GGTT",    0.90, "interconnect"),
+    ("intel_gtt_event","GTT",          "GGTT",    0.88, "interconnect"),
+    ("smmu_fault",     "intel_iommu",  "GGTT",    0.85, "interconnect"),
+    ("smmu_fault",     "IOMMU",        "GGTT",    0.83, "interconnect"),
+    ("pcie_error",     "i915",         "PCIe",    0.80, "interconnect"),
+    ("display_event",  "CRTC",         "DISPLAY", 0.85, "display"),
+    ("display_event",  "pipe",         "DISPLAY", 0.80, "display"),
+    ("intel_pmc_event","PMC",          "PMC",     0.88, "soc_platform"),
+    ("timeout_event",  "ring timeout", "RENDER",  0.78, "gpu"),
+    ("timeout_event",  "timeout",      "GT",      0.70, "gpu"),
+]
+
+# IP_PATTERNS kept for scaffold compatibility — CLASSIFY_RULES is the live data
+IP_PATTERNS: dict[str, list[tuple[str, float]]] = {}
+
+CASCADE_GRAPH: dict[str, list[str]] = {
+    "GUC":     ["RENDER", "BLITTER", "MEDIA"],
+    "HUC":     ["MEDIA"],
+    "GSC":     ["GT"],
+    "RENDER":  ["GT"],
+    "BLITTER": ["GT"],
+    "MEDIA":   ["GT"],
+    "PCIe":    ["GGTT", "RENDER"],
+    "GGTT":    ["RENDER", "BLITTER"],
+    "PMC":     ["GT"],
+    "GT":      [],
+}
+
+PLAYBOOK: dict[str, dict[str, Any]] = {
+    "GUC": {
+        "steps": [
+            "Verify kernel >= 6.3 (required for DG2 GuC 70.bin)",
+            "Check firmware: ls /lib/firmware/i915/dg2_guc_70.bin",
+            "Reload: modprobe -r i915 && modprobe i915 enable_guc=3",
+            "Fallback: add i915.enable_guc=0 to kernel cmdline",
+        ],
+        "references": ["https://gitlab.freedesktop.org/drm/intel/issues/7546"],
+        "notes": "GuC submission required for DG2+. Kernel < 6.3 ships wrong firmware.",
+    },
+    "RENDER": {
+        "steps": [
+            "Capture GPU state: cat /sys/kernel/debug/dri/0/i915_gpu_info",
+            "Check for hung batches: i915_hangcheck_period",
+            "Try GPU reset: echo 1 > /sys/kernel/debug/dri/0/i915_wedged",
+            "If recurring: reduce GPU frequency or disable RC6",
+        ],
+        "references": [],
+        "notes": "Render engine hang — usually recoverable via GPU reset.",
+    },
+    "PCIe": {
+        "steps": [
+            "Check AER errors: dmesg | grep -i aer",
+            "Reseat GPU or PCIe cable",
+            "Try: setpci -s 00:01.0 0x50.W=0x0140",
+            "Verify PCIe slot power delivery",
+        ],
+        "references": [],
+        "notes": "PCIe link issues can cause GTT mapping failures.",
+    },
+    "GGTT": {
+        "steps": [
+            "Check IOMMU: dmesg | grep -i iommu",
+            "Try: intel_iommu=off in kernel cmdline",
+            "Update firmware and i915 driver",
+        ],
+        "references": [],
+        "notes": "GTT/IOMMU faults often precede render engine hangs.",
+    },
+    "DISPLAY": {
+        "steps": [
+            "Check display pipe: dmesg | grep -i crtc",
+            "Try: drm.debug=0x1e kernel param",
+            "Disable PSR: i915.enable_psr=0",
+        ],
+        "references": [],
+        "notes": "Display engine pipe underruns or CRTC faults.",
+    },
+}
+
+REGISTER_MAPS: dict[str, dict[int, str]] = {
+    "GUC_STATUS": {
+        0x00000001: "GUC_READY",
+        0x00000002: "GUC_UKERNEL_ACTIVE",
+        0x00000004: "GUC_RESERVED",
+        0x80000000: "GUC_FW_FAIL",
+    },
+    "RING_HEAD": {
+        0x001FFFFF: "HEAD_PTR",
+    },
+    "RING_TAIL": {
+        0x001FFFF8: "TAIL_PTR",
+    },
+    "INSTDONE_1": {
+        0x00000001: "ROW_0_EU_0",
+        0x00000002: "ROW_0_EU_1",
+        0x80000000: "PIPE_CONTROL_STALL",
+    },
+}
+
+HANG_RULES: list[HangRule] = [
+    HangRule(mode="HANG",      signals=[r"ring timeout", r"GPU HANG"],          confidence=0.90),
+    HangRule(mode="STALL",     signals=[r"engine stall", r"CS stall"],          confidence=0.75),
+    HangRule(mode="HARD-HANG", signals=[r"GPU HANG.*reset failed"],             confidence=0.95),
+    HangRule(mode="SOFT-HANG", signals=[r"hangcheck expired"],                  confidence=0.70),
+]
+
+KNOWN_ISSUES: list[dict[str, Any]] = [
+    {
+        "issue_id": "INTEL-DG2-001",
+        "title": "GuC firmware load failure on DG2 GT2 with kernel < 6.3",
+        "chip_gens": ["intel_dg2"],
+        "symptoms": ["firmware_event", "gpu_hang"],
+        "workaround": "Upgrade to kernel >= 6.3 or use i915.enable_guc=0",
+        "fixed_in": "6.3.0",
+        "severity": "critical",
+        "url": "https://gitlab.freedesktop.org/drm/intel/issues/7546",
+    },
+    {
+        "issue_id": "INTEL-PVC-001",
+        "title": "SR-IOV VF reset storm on Ponte Vecchio with > 16 VFs",
+        "chip_gens": ["intel_xe_hpc"],
+        "symptoms": ["reset_event", "pcie_error"],
+        "workaround": "Limit VF count to <= 16 via sriov_numvfs",
+        "fixed_in": "Pending",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-TBT-001",
+        "title": "Thunderbolt/USB4 hot-plug causes SMMU fault on MTL",
+        "chip_gens": ["intel_mtl"],
+        "symptoms": ["thunderbolt_event", "smmu_fault"],
+        "workaround": "Disable TBT hot-plug in BIOS or add intel_iommu=off",
+        "fixed_in": "6.8.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-GEN12-001",
+        "title": "TGL/RKL GUC firmware assertion during heavy compute workload",
+        "chip_gens": ["intel_gen12"],
+        "symptoms": ["firmware_event", "gpu_hang"],
+        "workaround": "Set i915.enable_guc=2 to disable HuC",
+        "fixed_in": "6.1.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-DG2-002",
+        "title": "DG2 PCIe Gen4 link training failure at cold boot",
+        "chip_gens": ["intel_dg2"],
+        "symptoms": ["pcie_error", "gpu_hang"],
+        "workaround": "Force PCIe Gen3: pcie_aspm=off",
+        "fixed_in": "6.5.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-XE2-001",
+        "title": "Xe2 display engine CRTC underrun on 4K@144Hz",
+        "chip_gens": ["intel_xe2"],
+        "symptoms": ["display_event"],
+        "workaround": "Reduce refresh rate to 120Hz",
+        "fixed_in": "Pending",
+        "severity": "warning",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-MTL-001",
+        "title": "Meteor Lake SAMedia tile power gate issue on suspend",
+        "chip_gens": ["intel_mtl"],
+        "symptoms": ["power_event", "gpu_hang"],
+        "workaround": "Disable suspend: systemctl mask sleep.target",
+        "fixed_in": "6.9.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-DG2-003",
+        "title": "DG2 LMEM allocation failure under high memory pressure",
+        "chip_gens": ["intel_dg2"],
+        "symptoms": ["memory_event", "gpu_hang"],
+        "workaround": "Reduce process VRAM usage or disable GEM eviction",
+        "fixed_in": "6.6.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-GEN11-001",
+        "title": "ICL display PMC freeze causing kernel hang",
+        "chip_gens": ["intel_gen11"],
+        "symptoms": ["intel_pmc_event", "lockup"],
+        "workaround": "Add i915.enable_dc=0 to disable display power gating",
+        "fixed_in": "5.15.0",
+        "severity": "critical",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-XE-HPC-001",
+        "title": "PVC NVLink/Xe Link failure on NUMA topology mismatch",
+        "chip_gens": ["intel_xe_hpc"],
+        "symptoms": ["pcie_error", "memory_event"],
+        "workaround": "Bind processes to local NUMA node: numactl --membind=0",
+        "fixed_in": "Pending",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-DG1-001",
+        "title": "DG1 ring timeout on media workload with concurrent 3D",
+        "chip_gens": ["intel_dg1"],
+        "symptoms": ["timeout_event", "gpu_hang"],
+        "workaround": "Serialize media and 3D submissions",
+        "fixed_in": "5.18.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-GEN12-002",
+        "title": "TGL Thunderbolt 4 controller reset on USB4 device hotplug",
+        "chip_gens": ["intel_gen12"],
+        "symptoms": ["thunderbolt_event", "reset_event"],
+        "workaround": "Update Thunderbolt firmware to 43.0+",
+        "fixed_in": "6.2.0",
+        "severity": "warning",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-DG2-004",
+        "title": "DG2 GT2 ECC error causes silent data corruption in compute",
+        "chip_gens": ["intel_dg2"],
+        "symptoms": ["memory_event"],
+        "workaround": "Enable ECC: i915.enable_ecc=1",
+        "fixed_in": "6.4.0",
+        "severity": "critical",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-XE2-002",
+        "title": "Battlemage GSC firmware init failure on secure boot",
+        "chip_gens": ["intel_xe2"],
+        "symptoms": ["firmware_event"],
+        "workaround": "Enroll i915 MOK or disable secure boot",
+        "fixed_in": "Pending",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-MTL-002",
+        "title": "MTL integrated Xe-LP GGTT fragmentation after long uptime",
+        "chip_gens": ["intel_mtl"],
+        "symptoms": ["intel_gtt_event", "memory_event"],
+        "workaround": "Reboot or run: echo 3 > /proc/sys/vm/drop_caches",
+        "fixed_in": "Pending",
+        "severity": "warning",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-GEN11-002",
+        "title": "ICL blitter engine hang on large BLT transfers",
+        "chip_gens": ["intel_gen11"],
+        "symptoms": ["gpu_hang"],
+        "workaround": "Split BLT transfers to < 32MB chunks",
+        "fixed_in": "5.10.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-DG2-005",
+        "title": "DG2 CS TLB invalidation race on multi-context workloads",
+        "chip_gens": ["intel_dg2"],
+        "symptoms": ["gpu_hang", "reset_event"],
+        "workaround": "Set i915.enable_guc=3 (GuC handles context scheduling)",
+        "fixed_in": "6.7.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "INTEL-XE-HPC-002",
+        "title": "PVC PMC power rail sequencing failure at high load",
+        "chip_gens": ["intel_xe_hpc"],
+        "symptoms": ["intel_pmc_event", "gpu_hang"],
+        "workaround": "Reduce TDP limit: xe.force_probe=* + power cap",
+        "fixed_in": "Pending",
+        "severity": "critical",
+        "url": "",
+    },
+]

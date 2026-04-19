@@ -1,0 +1,9 @@
+Linux version 6.1.0-26-generic (buildd@lcy02) (gcc version 12.3.0)
+[    0.000000] BIOS-provided physical RAM map:
+[    0.000000] ACPI: bus type USB registered
+[    0.000000] PCI: Using configuration type 1 for base access
+[    1.234000] EXT4-fs (sda1): mounted filesystem
+[    2.100000] ip_tables: (C) 2000-2006 Netfilter Core Team
+[    5.000000] WARNING: possible circular locking dependency detected
+[    5.001000] eth0: renamed from veth1234
+[   10.000000] NET: Registered PF_UNIX/PF_LOCAL protocol family

@@ -1,25 +1,339 @@
+from __future__ import annotations
 from typing import Any
+from soctriage.core.soc_provider import HangRule
 
 QUALCOMM_IP_BLOCKS: list[str] = [
-    "ADRENO",   # GPU (graphics + compute) — KGSL driver
-    "SMMU",     # System MMU — address translation faults
-    "BIMC",     # Bus Integrated Memory Controller
-    "CPUss",    # CPU subsystem (Kryo cores)
-    "RPM",      # Resource Power Manager
-    "USB3",     # USB3 controller (DWC3)
-    "QMP",      # QMP PHY (USB/PCIe/UFS)
-    "UFS",      # Universal Flash Storage
-    "PCIe",     # PCIe root complex
-    "LLCC",     # Last Level Cache Controller
-    "WCSS",     # Wireless subsystem
-    "LPASS",    # Low Power Audio subsystem
-    "CAMSS",    # Camera subsystem
-    "VENUS",    # Video encode/decode engine
-    "PMIC",     # Power Management IC (SPMI bus)
+    "ADRENO", "SMMU", "BIMC", "CPUss", "RPM",
+    "USB3", "QMP", "UFS", "PCIe", "LLCC",
+    "WCSS", "LPASS", "CAMSS", "VENUS", "PMIC",
 ]
 
-IP_PATTERNS:   dict[str, list[tuple[str, float]]] = {}
-CASCADE_GRAPH: dict[str, list[str]]               = {}
-PLAYBOOK:      dict[str, dict[str, Any]]          = {}
-REGISTER_MAPS: dict[str, dict[int, str]]          = {}
-HANG_RULES:    list[Any]                          = []
+# IP_PATTERNS kept for scaffold compatibility
+IP_PATTERNS: dict[str, list[tuple[str, float]]] = {}
+
+# (token_type, raw_substring, ip, confidence, subsystem)
+# empty raw_substring "" = match any
+CLASSIFY_RULES: list[tuple[str, str, str, float, str]] = [
+    ("gpu_event",            "kgsl",        "ADRENO",  0.92, "gpu"),
+    ("gpu_event",            "adreno",      "ADRENO",  0.92, "gpu"),
+    ("gpu_event",            "",            "ADRENO",  0.75, "gpu"),
+    ("qcom_adsp_crash",      "",            "LPASS",   0.98, "remoteproc"),
+    ("qcom_cdsp_crash",      "",            "WCSS",    0.98, "remoteproc"),
+    ("qcom_slpi_crash",      "",            "LPASS",   0.95, "remoteproc"),
+    ("smmu_fault",           "arm-smmu",    "SMMU",    0.90, "interconnect"),
+    ("smmu_fault",           "qcom_smmu",   "SMMU",    0.90, "interconnect"),
+    ("smmu_fault",           "",            "SMMU",    0.80, "interconnect"),
+    ("ufs_event",            "ufshcd",      "UFS",     0.92, "storage"),
+    ("ufs_event",            "ufs",         "UFS",     0.88, "storage"),
+    ("phy_init_fail",        "ufs",         "QMP",     0.90, "storage"),
+    ("phy_calibration_fail", "pcie",        "QMP",     0.88, "interconnect"),
+    ("phy_calibration_fail", "",            "QMP",     0.80, "interconnect"),
+    ("spmi_event",           "PM8",         "PMIC",    0.90, "power"),
+    ("spmi_event",           "PMI",         "PMIC",    0.88, "power"),
+    ("spmi_event",           "",            "PMIC",    0.82, "power"),
+    ("remoteproc_crash",     "qcom_q6v5",   "LPASS",   0.92, "remoteproc"),
+    ("remoteproc_crash",     "",            "CPUss",   0.80, "remoteproc"),
+    ("pcie_error",           "",            "PCIe",    0.85, "interconnect"),
+    ("display_event",        "mdss",        "CAMSS",   0.90, "display"),
+    ("display_event",        "dpu",         "CAMSS",   0.88, "display"),
+    ("display_event",        "",            "CAMSS",   0.75, "display"),
+    ("power_event",          "krait",       "RPM",     0.80, "power"),
+    ("power_event",          "cpufreq",     "RPM",     0.75, "power"),
+    ("power_event",          "",            "RPM",     0.65, "power"),
+    ("wdt_event",            "qcom-wdt",    "CPUss",   0.95, "soc_platform"),
+    ("wdt_event",            "apps_wdt",    "CPUss",   0.95, "soc_platform"),
+    ("wdt_event",            "",            "CPUss",   0.85, "soc_platform"),
+    ("isp_event",            "camss",       "CAMSS",   0.88, "display"),
+]
+
+CASCADE_GRAPH: dict[str, list[str]] = {
+    "LPASS":  ["CPUss", "SMMU"],
+    "WCSS":   ["CPUss", "SMMU"],
+    "SMMU":   ["ADRENO", "UFS", "PCIe"],
+    "QMP":    ["UFS", "PCIe"],
+    "PMIC":   ["CPUss", "RPM"],
+    "ADRENO": ["SMMU"],
+    "UFS":    ["CPUss"],
+    "PCIe":   ["CPUss"],
+}
+
+PLAYBOOK: dict[str, dict[str, Any]] = {
+    "LPASS": {
+        "steps": [
+            "Check ADSP crash reason: adb shell cat /sys/kernel/debug/msm_adsp/log",
+            "Disable ADSP runtime PM: adsp_pm_disable=1 in bootargs",
+            "Update ADSP firmware to latest",
+            "Check LLCC flush ordering during suspend",
+        ],
+        "references": [],
+        "notes": "ADSP crash often triggered by LLCC flush race on SM8550 during suspend.",
+    },
+    "SMMU": {
+        "steps": [
+            "Capture SMMU context: cat /sys/kernel/debug/iommu/qcom-iommu/log",
+            "Increase SMMU CB timeout: qcom_smmu_timeout=200 in bootargs",
+            "Check CDSP firmware reload sequence",
+        ],
+        "references": [],
+        "notes": "SMMU context fault during CDSP reload common on SC8280XP.",
+    },
+    "UFS": {
+        "steps": [
+            "Check UFS PHY calibration logs",
+            "Apply UFS PHY timing patch for cold temperature",
+            "Update UFS firmware",
+            "Try: echo 1 > /sys/bus/platform/drivers/ufshcd/reset",
+        ],
+        "references": [],
+        "notes": "UFS PHY cal failure on SDM845 at low temperature is a known issue.",
+    },
+    "ADRENO": {
+        "steps": [
+            "Capture GPU state: cat /sys/kernel/debug/kgsl/kgsl-3d0/gpu_busy_percentage",
+            "Check for GPU hang: dmesg | grep kgsl",
+            "Try GPU recovery: echo 1 > /sys/class/kgsl/kgsl-3d0/reset",
+        ],
+        "references": [],
+        "notes": "Adreno GPU hang — check SMMU for DMA faults first.",
+    },
+    "PCIe": {
+        "steps": [
+            "Check PCIe link status: cat /sys/bus/pci/devices/*/link_state",
+            "Try PCIe reset: echo 1 > /sys/bus/pci/devices/*/reset",
+        ],
+        "references": [],
+        "notes": "Qualcomm PCIe root complex fault.",
+    },
+}
+
+REGISTER_MAPS: dict[str, dict[int, str]] = {
+    "SMMU_FSR": {
+        0x00000001: "MULTI",
+        0x00000002: "SS",
+        0x00000004: "UUT",
+        0x00000040: "ASF",
+        0x00000080: "TLBMCF",
+        0x80000000: "FAULT",
+    },
+    "GPU_STATUS": {
+        0x00000001: "GPU_BUSY",
+        0x00000002: "GPU_FAULT",
+        0x00000010: "CP_BUSY",
+        0x80000000: "GPU_HANG",
+    },
+    "RPM_STATUS": {
+        0x00000001: "RPM_ACTIVE",
+        0x00000002: "RPM_SLEEP",
+        0x00000004: "RPM_DEEP_SLEEP",
+    },
+}
+
+HANG_RULES: list[HangRule] = [
+    HangRule(mode="HANG",  signals=[r"kgsl.*hang", r"GPU hang detected"],    confidence=0.90),
+    HangRule(mode="ERROR", signals=[r"ADSP crash", r"adsp.*fault"],          confidence=0.95),
+    HangRule(mode="ERROR", signals=[r"ufshcd.*error", r"UFS.*link down"],    confidence=0.88),
+    HangRule(mode="STALL", signals=[r"smmu.*fault", r"IOMMU.*context"],      confidence=0.80),
+]
+
+KNOWN_ISSUES: list[dict[str, Any]] = [
+    {
+        "issue_id": "QCOM-ADSP-001",
+        "title": "ADSP crash on SM8550 due to LLCC flush race during suspend",
+        "chip_gens": ["qcom_sm8550"],
+        "symptoms": ["qcom_adsp_crash", "power_event"],
+        "workaround": "Disable runtime PM for ADSP: adsp_pm_disable=1 in bootargs",
+        "fixed_in": "6.6.0",
+        "severity": "critical",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-UFS-001",
+        "title": "UFS PHY calibration failure on SDM845 at low temperature",
+        "chip_gens": ["qcom_sdm845"],
+        "symptoms": ["phy_calibration_fail", "ufs_event"],
+        "workaround": "Apply downstream UFS PHY timing patch",
+        "fixed_in": "5.15.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-SMMU-001",
+        "title": "SMMU context fault during CDSP firmware reload on SC8280XP",
+        "chip_gens": ["qcom_sc8280xp"],
+        "symptoms": ["smmu_fault", "qcom_cdsp_crash"],
+        "workaround": "Increase SMMU CB timeout: qcom_smmu_timeout=200",
+        "fixed_in": "Pending",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-ADRENO-001",
+        "title": "Adreno 740 GPU hang on SM8550 with Vulkan compute + graphics mix",
+        "chip_gens": ["qcom_sm8550"],
+        "symptoms": ["gpu_event", "smmu_fault"],
+        "workaround": "Serialize Vulkan compute and graphics queues",
+        "fixed_in": "6.7.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-PCIE-001",
+        "title": "PCIe Gen3 link training failure on SM8450 at cold boot",
+        "chip_gens": ["qcom_sm8450"],
+        "symptoms": ["pcie_error", "phy_init_fail"],
+        "workaround": "Add qcom-pcie delay: pcie_init_delay=100",
+        "fixed_in": "6.3.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-WDT-001",
+        "title": "APPS watchdog bite on SM8350 during thermal throttling",
+        "chip_gens": ["qcom_sm8350"],
+        "symptoms": ["wdt_event", "power_event"],
+        "workaround": "Increase thermal threshold: echo 95 > /sys/class/thermal/thermal_zone0/trip_point_0_temp",
+        "fixed_in": "6.1.0",
+        "severity": "critical",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-REMOTEPROC-001",
+        "title": "Q6DSP remoteproc crash on SM8250 during modem voice call",
+        "chip_gens": ["qcom_sm8250"],
+        "symptoms": ["remoteproc_crash"],
+        "workaround": "Update modem firmware and restart ril daemon",
+        "fixed_in": "5.10.0",
+        "severity": "critical",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-LLCC-001",
+        "title": "LLCC cache coherency error on SC8280XP under heavy compute",
+        "chip_gens": ["qcom_sc8280xp"],
+        "symptoms": ["memory_event"],
+        "workaround": "Disable LLCC prefetch: llcc_pref_disable=1",
+        "fixed_in": "Pending",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-SPMI-001",
+        "title": "SPMI bus timeout on SDM845 causing PMIC communication failure",
+        "chip_gens": ["qcom_sdm845"],
+        "symptoms": ["spmi_event"],
+        "workaround": "Update PM8998 firmware",
+        "fixed_in": "5.4.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-CAMSS-001",
+        "title": "Camera ISP IFE stall on SM8550 during 4K video capture",
+        "chip_gens": ["qcom_sm8550"],
+        "symptoms": ["isp_event", "display_event"],
+        "workaround": "Limit capture to 1080p or reduce frame rate",
+        "fixed_in": "6.8.0",
+        "severity": "warning",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-USB-001",
+        "title": "USB3 controller hang on SM8450 during USB-C PD negotiation",
+        "chip_gens": ["qcom_sm8450"],
+        "symptoms": ["reset_event"],
+        "workaround": "Update USB-C PD firmware",
+        "fixed_in": "6.2.0",
+        "severity": "warning",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-ADSP-002",
+        "title": "ADSP PIL reload failure on SM8450 after first crash",
+        "chip_gens": ["qcom_sm8450"],
+        "symptoms": ["qcom_adsp_crash", "remoteproc_crash"],
+        "workaround": "Reboot device to recover ADSP",
+        "fixed_in": "6.4.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-UFS-002",
+        "title": "UFS HS-G4 gear switch failure on SM8650",
+        "chip_gens": ["qcom_sm8650"],
+        "symptoms": ["ufs_event"],
+        "workaround": "Force UFS HS-G3: ufshcd_default_gear=3",
+        "fixed_in": "Pending",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-PCIE-002",
+        "title": "PCIe SMMU fault on SC8280XP with NVMe drive at high queue depth",
+        "chip_gens": ["qcom_sc8280xp"],
+        "symptoms": ["pcie_error", "smmu_fault"],
+        "workaround": "Limit NVMe queue depth: nvme_core.io_timeout=30",
+        "fixed_in": "Pending",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-ADRENO-002",
+        "title": "Adreno 660 GMEM corruption on SM8350 with OpenGL ES 3.2",
+        "chip_gens": ["qcom_sm8350"],
+        "symptoms": ["gpu_event", "memory_event"],
+        "workaround": "Disable GMEM optimization: kgsl.gmem_disable=1",
+        "fixed_in": "5.15.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-VENUS-001",
+        "title": "Venus video encoder crash on SM8250 during HEVC 4K encode",
+        "chip_gens": ["qcom_sm8250"],
+        "symptoms": ["display_event"],
+        "workaround": "Use H.264 codec as fallback",
+        "fixed_in": "5.10.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-WDT-002",
+        "title": "Non-secure watchdog bite on SC8280XP in hypervisor mode",
+        "chip_gens": ["qcom_sc8280xp"],
+        "symptoms": ["wdt_event"],
+        "workaround": "Disable non-secure WDT: qcom_wdt_ns_disable=1",
+        "fixed_in": "Pending",
+        "severity": "critical",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-ADSP-003",
+        "title": "SLPI sensor hub crash on SM8650 during sensor fusion",
+        "chip_gens": ["qcom_sm8650"],
+        "symptoms": ["qcom_slpi_crash"],
+        "workaround": "Disable sensor fusion: persist.vendor.sensors.fusion=0",
+        "fixed_in": "Pending",
+        "severity": "warning",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-BIMC-001",
+        "title": "BIMC bus interconnect timeout on SDM845 under memory pressure",
+        "chip_gens": ["qcom_sdm845"],
+        "symptoms": ["memory_event"],
+        "workaround": "Increase bus scaling bandwidth: msm_bus_scale",
+        "fixed_in": "5.10.0",
+        "severity": "error",
+        "url": "",
+    },
+    {
+        "issue_id": "QCOM-QMP-001",
+        "title": "QMP PHY init failure on SM8550 at cold boot below -10C",
+        "chip_gens": ["qcom_sm8550"],
+        "symptoms": ["phy_init_fail"],
+        "workaround": "Increase PHY init timeout: qcom_phy_timeout_ms=500",
+        "fixed_in": "6.9.0",
+        "severity": "error",
+        "url": "",
+    },
+]

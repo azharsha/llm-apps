@@ -1,0 +1,11 @@
+Linux version 6.1.0-26-generic
+[    0.000000] Intel DG2 (Alchemist) GT2 512EU
+[    0.000000] i915: Loading firmware i915/dg2_guc_70.bin
+[    1.234000] i915: GuC firmware i915/dg2_guc_70.bin load failed with err -2
+[    1.234100] i915: HuC firmware load failed
+[    1.234200] i915: firmware: GuC submission disabled
+[    5.100000] i915: ring timeout on rcs0 — GPU HANG detected
+[    5.100100] i915: GPU HANG: ecode 12:1:857ffffb
+[   10.200000] Kernel panic - not syncing: GPU hang unrecoverable
+[   10.200001] Call Trace:
+[   10.200002]  i915_reset_engines+0x210/0x380 [i915]

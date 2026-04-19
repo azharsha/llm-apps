@@ -1,0 +1,9 @@
+Linux version 6.6.0-generic
+[    0.000000] AMD Radeon RX 7900 XTX Navi31 RDNA3 detected
+[    0.000000] amdgpu: drm/amd loading PSP firmware
+[    0.000000] amdgpu_psp: Loading PSP sos firmware
+[    1.000000] amdgpu_psp: PSP firmware signature verification failed
+[    1.000001] amd_psp_fw_fail: PSP bootloader status: 0x80000000 — PSP_FAULT
+[    1.000002] amdgpu: amdgpu_psp_load_fw failed — firmware not signed
+[    1.000003] amdgpu: PSP initialization failed
+[    1.100000] amdgpu: GPU init failed due to PSP error

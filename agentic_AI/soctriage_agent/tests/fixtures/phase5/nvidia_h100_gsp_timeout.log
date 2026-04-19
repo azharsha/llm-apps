@@ -1,0 +1,12 @@
+Linux version 6.5.0-generic
+[    0.000000] NVIDIA H100 SXM Hopper GH100 GPU detected
+[    0.000000] NVRM: loading NVIDIA UNIX Open Kernel Module
+[    0.000000] nvidia: GSP firmware loading
+[    1.000000] nvidia: NVLink fabric initialized — 18 links active
+[    2.000000] nvidia-smi: MIG mode enabled — partitioning into 7x 10GB instances
+[    5.000000] NVRM: XID 119 — GSP RPC timeout
+[    5.000001] nvidia: GSP firmware timeout during MIG instance initialization
+[    5.000002] NVRM: GPU at PCI:0000:03:00: GPU-abcdef01
+[    5.000003] nvidia: channel 0000007c timed out
+[    5.100000] NVRM: XID 31 — GPU hang detected
+[    5.100001] nvidia: pstate: GPU performance state P0 — hang

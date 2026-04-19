@@ -1,0 +1,11 @@
+Linux version 6.7.0-amd
+[    0.000000] AMD MI300X Aqua Vanjaram CDNA3 APU initialized
+[    0.000000] amdgpu: MMHUB initialized for 192GB HBM3
+[    0.000000] amd_iommu: IOMMU v2 enabled
+[    1.000000] amdgpu: KFD initialized for MI300X
+[    5.000000] amdgpu: GRBM_STATUS: 0xC0400080 — GUI_ACTIVE CP_RQ_PENDING SPI_BUSY
+[    5.100000] amdgpu: CP_STALLED detected — MMHUB stall during xGMI peer mapping
+[    5.100001] amdgpu: GPU HANG: ring sdma0 timeout
+[    5.100002] amdgpu: GPU hang detected on card 0, attempting reset
+[    5.200000] amdgpu: GPU reset failed — MMHUB stall unrecoverable
+[    5.200001] Kernel panic - not syncing: amdgpu reset failed

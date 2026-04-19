@@ -1,0 +1,10 @@
+Linux version 6.5.0-generic
+[    0.000000] AMD Radeon RX 6900 XT Navi21 RDNA2 initialized
+[    0.000000] amdgpu: drm/amd driver loaded
+[    0.000000] amdgpu: SDMA_STATUS: idle
+[    5.000000] amdgpu: GPU HANG detected on gfx ring
+[    5.000100] amdgpu: CP_STALLED_STAT1: 0x80000000
+[    5.000200] amdgpu: GRBM_STATUS: 0xE0000080
+[    5.000300] amdgpu: ring timeout on gfx_0
+[    5.100000] amdgpu: GPU reset initiated
+[    5.100100] amdgpu: GPU reset succeeded

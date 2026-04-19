@@ -1,0 +1,12 @@
+Linux version 6.5.0-qcom (gcc version 13.1.0)
+[    0.000000] Qualcomm SM8550 Snapdragon 8 Gen 2 SoC
+[    0.000000] qcom: LLCC cache initialized
+[    0.000000] qcom_smmu: arm-smmu initialized for SM8550
+[    5.000000] msm-adsp: ADSP firmware loaded successfully
+[   10.000000] qcom: Entering system suspend
+[   10.100000] msm-adsp: ADSP crash detected during LLCC flush
+[   10.100001] qcom_adsp_crash: ADSP subsystem crashed
+[   10.100002] remoteproc: ADSP remoteproc recovery failed
+[   10.200000] Kernel panic - not syncing: ADSP crash unrecoverable
+[   10.200001] Call Trace:
+[   10.200002]  qcom_smmu_fault_handler+0x90/0x120
