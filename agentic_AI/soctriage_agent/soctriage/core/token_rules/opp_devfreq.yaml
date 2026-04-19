@@ -1,0 +1,38 @@
+version: 1
+category: opp_devfreq
+description: "OPP table and device frequency scaling signals"
+author: SoCTriage
+priority_base: 85
+
+rules:
+
+  - token_type: freq_limit_hit
+    priority: 100
+    match_mode: any
+    patterns:
+      - "frequency limit reached"
+      - "devfreq: max freq capped"
+      - "opp: freq limit"
+    arch: any
+    providers: any
+
+  - token_type: devfreq_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "devfreq:"
+      - "devfreq_add_device"
+      - "devfreq: failed"
+    arch: any
+    providers: any
+
+  - token_type: opp_event
+    priority: 85
+    match_mode: any
+    patterns:
+      - "opp:"
+      - "_opp_table"
+      - "opp_add"
+      - "operating-points"
+    arch: any
+    providers: any

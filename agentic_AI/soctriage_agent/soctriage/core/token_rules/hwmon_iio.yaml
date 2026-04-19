@@ -1,0 +1,37 @@
+version: 1
+category: hwmon_iio
+description: "Hardware monitor and IIO sensor signals"
+author: SoCTriage
+priority_base: 85
+
+rules:
+
+  - token_type: thermal_sensor_fail
+    priority: 100
+    match_mode: any
+    patterns:
+      - "thermal sensor failure"
+      - "sensor read error"
+      - "hwmon: sensor timeout"
+    arch: any
+    providers: any
+
+  - token_type: hwmon_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "hwmon:"
+      - "hwmon device"
+      - "hwmon_device_register"
+    arch: any
+    providers: any
+
+  - token_type: iio_event
+    priority: 85
+    match_mode: any
+    patterns:
+      - "iio:"
+      - "iio_device"
+      - "industrial I/O"
+    arch: any
+    providers: any

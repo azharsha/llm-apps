@@ -1,0 +1,37 @@
+version: 1
+category: ebpf
+description: "eBPF verifier, JIT, and runtime signals"
+author: SoCTriage
+priority_base: 88
+
+rules:
+
+  - token_type: bpf_verifier_fail
+    priority: 105
+    match_mode: any
+    patterns:
+      - "BPF program rejected"
+      - "bpf verifier: "
+      - "bpf: Failed to"
+    arch: any
+    providers: any
+
+  - token_type: bpf_jit_fail
+    priority: 100
+    match_mode: any
+    patterns:
+      - "bpf_jit: "
+      - "BPF JIT"
+      - "jit compile failed"
+    arch: any
+    providers: any
+
+  - token_type: bpf_event
+    priority: 88
+    match_mode: any
+    patterns:
+      - "bpf:"
+      - "BPF:"
+      - "bpf_prog"
+    arch: any
+    providers: any

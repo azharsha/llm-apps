@@ -1,0 +1,39 @@
+version: 1
+category: cxl
+description: "CXL 2.0/3.0 memory expansion and error signals"
+author: SoCTriage
+priority_base: 120
+
+rules:
+
+  - token_type: cxl_mem_error
+    priority: 125
+    match_mode: any
+    patterns:
+      - "CXL: memory error"
+      - "cxl: uncorrectable"
+      - "cxl: correctable"
+    arch: any
+    providers: any
+
+  - token_type: cxl_link_fail
+    priority: 122
+    match_mode: any
+    patterns:
+      - "cxl_pci: fatal"
+      - "cxl: link failure"
+      - "cxl: link degraded"
+    arch: any
+    providers: any
+
+  - token_type: cxl_event
+    priority: 120
+    match_mode: any
+    patterns:
+      - "cxl_mem:"
+      - "CXL: error"
+      - "cxl_port:"
+      - "cxl_root:"
+      - "cxl:"
+    arch: any
+    providers: any

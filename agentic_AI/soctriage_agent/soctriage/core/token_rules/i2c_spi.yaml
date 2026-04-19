@@ -1,0 +1,48 @@
+version: 1
+category: i2c_spi
+description: "I2C and SPI bus error signals"
+author: SoCTriage
+priority_base: 88
+
+rules:
+
+  - token_type: i2c_nack
+    priority: 100
+    match_mode: any
+    patterns:
+      - "i2c: no response"
+      - "i2c: nack"
+      - "i2c_transfer failed"
+      - "I2C NACK"
+    arch: any
+    providers: any
+
+  - token_type: spi_timeout
+    priority: 95
+    match_mode: any
+    patterns:
+      - "spi: timeout"
+      - "spi_sync timed out"
+      - "SPI transfer timeout"
+    arch: any
+    providers: any
+
+  - token_type: i2c_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "i2c:"
+      - "i2c-core"
+      - regex: "i2c-\\d+:"
+    arch: any
+    providers: any
+
+  - token_type: spi_event
+    priority: 85
+    match_mode: any
+    patterns:
+      - "spi:"
+      - "spi-nor:"
+      - regex: "spi\\d+\\."
+    arch: any
+    providers: any

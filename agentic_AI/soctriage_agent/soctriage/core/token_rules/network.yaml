@@ -1,0 +1,43 @@
+version: 1
+category: network
+description: "Network, RoCE/RDMA, and InfiniBand signals"
+author: SoCTriage
+priority_base: 85
+
+rules:
+
+  - token_type: infiniband_event
+    priority: 110
+    match_mode: any
+    patterns:
+      - "infiniband"
+      - "mlx4:"
+      - "mlx5:"
+      - "IB/core"
+      - "rdma_cm"
+    arch: any
+    providers: any
+
+  - token_type: roce_event
+    priority: 100
+    match_mode: any
+    patterns:
+      - "RoCE"
+      - "roce"
+      - "RDMA"
+      - "rdma:"
+    arch: any
+    providers: any
+
+  - token_type: network_event
+    priority: 85
+    match_mode: any
+    patterns:
+      - regex: "\\beth\\b"
+      - "net:"
+      - "bnx2"
+      - "NIC"
+      - "netif_"
+      - "napi"
+    arch: any
+    providers: any

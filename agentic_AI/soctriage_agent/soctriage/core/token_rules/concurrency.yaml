@@ -1,0 +1,27 @@
+version: 1
+category: concurrency
+description: "Locking and workqueue concurrency fault signals"
+author: SoCTriage
+priority_base: 90
+
+rules:
+
+  - token_type: priority_inversion
+    priority: 95
+    match_mode: any
+    patterns:
+      - "PI-futex"
+      - "rtmutex: owner died"
+      - "priority inversion detected"
+    arch: any
+    providers: any
+
+  - token_type: context_switch_fault
+    priority: 88
+    match_mode: any
+    patterns:
+      - "preempt count underflow"
+      - "preempt_count error"
+      - "context switch while in atomic"
+    arch: any
+    providers: any

@@ -1,0 +1,37 @@
+version: 1
+category: coresight
+description: "CoreSight hardware tracing signals"
+author: SoCTriage
+priority_base: 88
+
+rules:
+
+  - token_type: etm_event
+    priority: 100
+    match_mode: any
+    patterns:
+      - "etm:"
+      - "ETM:"
+      - "coresight-etm"
+    arch: arm64
+    providers: any
+
+  - token_type: stm_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "stm:"
+      - "STM:"
+      - "coresight-stm"
+    arch: any
+    providers: any
+
+  - token_type: coresight_event
+    priority: 88
+    match_mode: any
+    patterns:
+      - "coresight:"
+      - "coresight-"
+      - "CoreSight"
+    arch: any
+    providers: any

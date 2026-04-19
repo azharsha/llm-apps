@@ -1,0 +1,38 @@
+version: 1
+category: mfd
+description: "Multi-Function Device and PMIC signals"
+author: SoCTriage
+priority_base: 90
+
+rules:
+
+  - token_type: mfd_child_fail
+    priority: 100
+    match_mode: any
+    patterns:
+      - "mfd: failed to add device"
+      - "mfd_cell: probe failed"
+      - "mfd child failed"
+    arch: any
+    providers: any
+
+  - token_type: pmic_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "pmic:"
+      - "PMIC irq"
+      - "pmic_bus"
+      - "pmic event"
+    arch: any
+    providers: any
+
+  - token_type: mfd_event
+    priority: 88
+    match_mode: any
+    patterns:
+      - "mfd:"
+      - "mfd_core"
+      - "platform mfd"
+    arch: any
+    providers: any

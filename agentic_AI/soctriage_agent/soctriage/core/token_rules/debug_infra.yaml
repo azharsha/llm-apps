@@ -1,0 +1,84 @@
+version: 1
+category: debug_infra
+description: "Kernel debug infrastructure — ramoops, ftrace, kgdb, RAS, kunit"
+author: SoCTriage
+priority_base: 130
+
+rules:
+
+  - token_type: ramoops_event
+    priority: 160
+    match_mode: any
+    patterns:
+      - "ramoops:"
+      - "pstore:"
+      - "console-ramoops"
+      - "dmesg-ramoops"
+    arch: any
+    providers: any
+    notes: "Previous crash evidence — must be caught before generic info lines"
+
+  - token_type: ras_event
+    priority: 130
+    match_mode: any
+    patterns:
+      - "RAS:"
+      - "EDAC MC"
+      - "memory scrubbing"
+      - "CE storm"
+      - "UE detected"
+      - "ghes:"
+    arch: any
+    providers: any
+    notes: "RAS events — AMD MI300/Intel PVC data center validation"
+
+  - token_type: kgdb_event
+    priority: 115
+    match_mode: any
+    patterns:
+      - "KGDB:"
+      - "kgdb: entering"
+      - "kgdb breakpoint"
+    arch: any
+    providers: any
+
+  - token_type: ftrace_event
+    priority: 110
+    match_mode: any
+    patterns:
+      - "ftrace:"
+      - "function_graph tracer"
+      - "trace_buf"
+    arch: any
+    providers: any
+
+  - token_type: hw_counter_event
+    priority: 105
+    match_mode: any
+    patterns:
+      - "perf: interrupt took too long"
+      - "PMU overrun"
+      - "hw_perf_event"
+    arch: any
+    providers: any
+
+  - token_type: kunit_event
+    priority: 100
+    match_mode: any
+    patterns:
+      - "kunit:"
+      - "KUNIT FAILED"
+      - "KUNIT PASSED"
+      - "# Subtest:"
+    arch: any
+    providers: any
+
+  - token_type: tracepoint
+    priority: 85
+    match_mode: any
+    patterns:
+      - "trace_event"
+      - "tracepoint:"
+      - "tp_call"
+    arch: any
+    providers: any

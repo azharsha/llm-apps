@@ -1,0 +1,57 @@
+version: 1
+category: fs_block
+description: "Filesystem and block layer signals — ext4, xfs, btrfs, dm"
+author: SoCTriage
+priority_base: 85
+
+rules:
+
+  - token_type: btrfs_event
+    priority: 100
+    match_mode: any
+    patterns:
+      - "BTRFS:"
+      - "btrfs:"
+      - "BTRFS error"
+    arch: any
+    providers: any
+
+  - token_type: xfs_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "XFS:"
+      - "xfs:"
+      - "XFS metadata"
+    arch: any
+    providers: any
+
+  - token_type: ext4_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "EXT4-fs error"
+      - "ext4:"
+      - "EXT4-fs:"
+    arch: any
+    providers: any
+
+  - token_type: dm_event
+    priority: 88
+    match_mode: any
+    patterns:
+      - "device-mapper:"
+      - "dm-"
+      - "dm crypt"
+    arch: any
+    providers: any
+
+  - token_type: blk_mq_event
+    priority: 85
+    match_mode: any
+    patterns:
+      - "blk_mq:"
+      - "blk_update_request"
+      - "block layer:"
+    arch: any
+    providers: any

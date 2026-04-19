@@ -1,0 +1,38 @@
+version: 1
+category: perf_pmu
+description: "Perf, PMU, and uncore counter signals"
+author: SoCTriage
+priority_base: 85
+
+rules:
+
+  - token_type: uncore_event
+    priority: 100
+    match_mode: any
+    patterns:
+      - "uncore:"
+      - "uncore_pmu"
+      - "uncore event"
+    arch: any
+    providers: any
+
+  - token_type: pmu_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "pmu:"
+      - "PMU:"
+      - "pmu_event"
+      - "hardware pmu"
+    arch: any
+    providers: any
+
+  - token_type: perf_event
+    priority: 88
+    match_mode: any
+    patterns:
+      - "perf:"
+      - "perf_event"
+      - "perf: interrupt"
+    arch: any
+    providers: any

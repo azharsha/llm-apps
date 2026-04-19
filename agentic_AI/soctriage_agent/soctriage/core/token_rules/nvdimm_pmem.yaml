@@ -1,0 +1,37 @@
+version: 1
+category: nvdimm_pmem
+description: "NVDIMM, persistent memory (pmem), and DAX signals"
+author: SoCTriage
+priority_base: 90
+
+rules:
+
+  - token_type: nvdimm_event
+    priority: 100
+    match_mode: any
+    patterns:
+      - "nvdimm:"
+      - "libnvdimm"
+      - "NVDIMM"
+    arch: any
+    providers: any
+
+  - token_type: pmem_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "pmem:"
+      - "pmem error"
+      - "persistent memory"
+    arch: any
+    providers: any
+
+  - token_type: dax_event
+    priority: 88
+    match_mode: any
+    patterns:
+      - "dax:"
+      - "dax_dev"
+      - "fs_dax"
+    arch: any
+    providers: any

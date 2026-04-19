@@ -1,0 +1,49 @@
+version: 1
+category: tpm_crypto
+description: "TPM, crypto, keyring, and IMA signals"
+author: SoCTriage
+priority_base: 90
+
+rules:
+
+  - token_type: ima_event
+    priority: 110
+    match_mode: any
+    patterns:
+      - "ima: violation"
+      - "IMA: measurement"
+      - "ima_appraise"
+    arch: any
+    providers: any
+
+  - token_type: tpm_event
+    priority: 100
+    match_mode: any
+    patterns:
+      - "tpm:"
+      - "TPM:"
+      - "tpm_tis"
+      - "tpm timeout"
+    arch: any
+    providers: any
+
+  - token_type: keyring_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "keyring:"
+      - "key_create"
+      - "key rejected"
+      - "asymmetric key"
+    arch: any
+    providers: any
+
+  - token_type: crypto_event
+    priority: 88
+    match_mode: any
+    patterns:
+      - "crypto:"
+      - "alg:"
+      - "crypto_alloc"
+    arch: any
+    providers: any

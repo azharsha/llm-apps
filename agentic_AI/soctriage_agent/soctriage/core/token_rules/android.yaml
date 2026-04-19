@@ -1,0 +1,50 @@
+version: 1
+category: android
+description: "Android AOSP kernel signals — Binder, ION, panic, logcat"
+author: SoCTriage
+priority_base: 100
+
+rules:
+
+  - token_type: android_panic
+    priority: 118
+    match_mode: any
+    patterns:
+      - "Fatal signal"
+      - "SIGSEGV"
+      - "SIGABRT"
+      - "tombstone"
+    arch: any
+    providers: any
+    notes: "Android userspace crash signals leaking into kernel log"
+
+  - token_type: binder_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "binder:"
+      - "binder_ioctl"
+      - "binder: transaction failed"
+      - "binder: undelivered TRANSACTION_ERROR"
+    arch: any
+    providers: any
+
+  - token_type: ion_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "ion:"
+      - "ion_alloc"
+      - "ION: allocation failed"
+    arch: any
+    providers: any
+
+  - token_type: logcat_event
+    priority: 80
+    match_mode: any
+    patterns:
+      - "logcat"
+      - "android_logger"
+      - "logger: log"
+    arch: any
+    providers: any

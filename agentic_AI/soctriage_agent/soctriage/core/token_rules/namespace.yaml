@@ -1,0 +1,37 @@
+version: 1
+category: namespace
+description: "Linux namespaces, seccomp, and Landlock signals"
+author: SoCTriage
+priority_base: 85
+
+rules:
+
+  - token_type: seccomp_event
+    priority: 100
+    match_mode: any
+    patterns:
+      - "seccomp:"
+      - "SECCOMP"
+      - "seccomp violation"
+    arch: any
+    providers: any
+
+  - token_type: landlock_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "landlock:"
+      - "Landlock"
+      - "landlock denied"
+    arch: any
+    providers: any
+
+  - token_type: ns_event
+    priority: 85
+    match_mode: any
+    patterns:
+      - "unshare:"
+      - "namespace:"
+      - "user_ns"
+    arch: any
+    providers: any

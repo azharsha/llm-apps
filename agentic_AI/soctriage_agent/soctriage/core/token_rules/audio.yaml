@@ -1,0 +1,38 @@
+version: 1
+category: audio
+description: "ASoC/ALSA audio subsystem signals"
+author: SoCTriage
+priority_base: 85
+
+rules:
+
+  - token_type: audio_dsp_fail
+    priority: 100
+    match_mode: any
+    patterns:
+      - "audio dsp failed"
+      - "ADSP: audio error"
+      - "audio firmware timeout"
+    arch: any
+    providers: any
+
+  - token_type: asoc_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "asoc:"
+      - "ASoC:"
+      - "sound/soc"
+      - "snd_soc"
+    arch: any
+    providers: any
+
+  - token_type: codec_event
+    priority: 85
+    match_mode: any
+    patterns:
+      - "codec:"
+      - "audio codec"
+      - "sound codec error"
+    arch: any
+    providers: any

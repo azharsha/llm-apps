@@ -1,0 +1,45 @@
+version: 1
+category: security
+description: "Kernel security — audit, sanitizers (UBSAN/KCSAN/KMSAN), speculation faults"
+author: SoCTriage
+priority_base: 110
+
+rules:
+
+  - token_type: sanitizer_event
+    priority: 112
+    match_mode: any
+    patterns:
+      - "UBSAN:"
+      - "KCSAN:"
+      - "KMSAN:"
+      - "AddressSanitizer"
+      - "KFENCE:"
+    exclude_patterns:
+      - "KASAN"
+    arch: any
+    providers: any
+    notes: "Sanitizer events — KASAN handled by memory.yaml"
+
+  - token_type: audit_event
+    priority: 100
+    match_mode: any
+    patterns:
+      - "audit:"
+      - "type=AVC"
+      - "selinux:"
+      - "apparmor:"
+      - "SELinux"
+    arch: any
+    providers: any
+
+  - token_type: speculation_fault
+    priority: 95
+    match_mode: any
+    patterns:
+      - "Speculative Store Bypass"
+      - "TAA:"
+      - "MMIO Stale Data"
+      - "SRBDS:"
+    arch: any
+    providers: any

@@ -1,0 +1,50 @@
+version: 1
+category: media
+description: "Media/V4L2 and camera pipeline signals"
+author: SoCTriage
+priority_base: 85
+
+rules:
+
+  - token_type: camera_fail
+    priority: 100
+    match_mode: any
+    patterns:
+      - "camera: failed"
+      - "cam_sensor: error"
+      - "camera sensor not found"
+    arch: any
+    providers: any
+
+  - token_type: video_codec_fail
+    priority: 95
+    match_mode: any
+    patterns:
+      - "video codec failed"
+      - "codec: timeout"
+      - "decoder error"
+      - "encoder stall"
+    arch: any
+    providers: any
+
+  - token_type: isp_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "isp:"
+      - "ISP:"
+      - "isp error"
+      - "isp timeout"
+    arch: any
+    providers: any
+
+  - token_type: v4l2_event
+    priority: 85
+    match_mode: any
+    patterns:
+      - "v4l2:"
+      - "v4l2-core"
+      - "video_device"
+      - "videobuf"
+    arch: any
+    providers: any

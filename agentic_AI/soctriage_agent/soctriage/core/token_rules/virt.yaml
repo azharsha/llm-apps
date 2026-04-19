@@ -1,0 +1,42 @@
+version: 1
+category: virt
+description: "Virtualization — KVM, VFIO SR-IOV, cgroup signals"
+author: SoCTriage
+priority_base: 110
+
+rules:
+
+  - token_type: vfio_event
+    priority: 115
+    match_mode: any
+    patterns:
+      - "vfio:"
+      - "VFIO:"
+      - "vfio_pci"
+      - "iommu group"
+      - "device assignment failed"
+    arch: any
+    providers: any
+
+  - token_type: kvm_event
+    priority: 110
+    match_mode: any
+    patterns:
+      - "kvm: vcpu"
+      - "KVM: entry failed"
+      - "vmx: VM-Enter failed"
+      - "SVM:"
+      - "nested virt"
+    arch: any
+    providers: any
+
+  - token_type: cgroup_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "cgroup:"
+      - "cgroup out of memory"
+      - "cgroupfs"
+      - "cgroup v2"
+    arch: any
+    providers: any
