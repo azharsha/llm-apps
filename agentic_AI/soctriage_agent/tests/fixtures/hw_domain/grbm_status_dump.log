@@ -1,0 +1,3 @@
+[  567.890123] amdgpu 0000:03:00.0: amdgpu: GRBM_STATUS: 0x80008040
+[  567.890124] amdgpu 0000:03:00.0: amdgpu:   ME_BUSY(27) = 1
+[  567.890125] amdgpu 0000:03:00.0: amdgpu:   GFX_BUSY(31) = 1

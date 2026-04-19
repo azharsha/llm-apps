@@ -1,0 +1,3 @@
+[  789.012345] amdgpu 0000:03:00.0: amdgpu: SQ_WAVE_TRAPSTS: 0x00000200
+[  789.012346] amdgpu 0000:03:00.0: amdgpu: SQ: memory violation in wave shader
+[  789.012347] amdgpu 0000:03:00.0: amdgpu: SQ_WAVE_TRAPSTS memory_violation=1

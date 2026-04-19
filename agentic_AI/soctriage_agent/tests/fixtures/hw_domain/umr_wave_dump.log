@@ -1,0 +1,4 @@
+wave 0: pc=0xffff000012345678 exec=0xffffffffffffffff
+wave 1: pc=0xffff000012345678 exec=0xffffffffffffffff
+wave 2: pc=0xffff000012345678 exec=0xffffffffffffffff
+wave 3: pc=0xffff000012346000 exec=0x00000000ffffffff

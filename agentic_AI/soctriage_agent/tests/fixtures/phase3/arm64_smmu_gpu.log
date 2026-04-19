@@ -1,0 +1,8 @@
+Linux version 6.8.0-45-generic (buildd@lcy02)
+MI300 Aqua Vanjaram: IOMMU fault detected
+arm-smmu-v3 arm-smmu-v3.0: SMMU context fault event received
+arm-smmu-v3 arm-smmu-v3.0: SMMU fault! SID=0x800 SSID=0x0
+arm-smmu-v3 arm-smmu-v3.0: event=0x0000000000000010
+[  2.000000] amdgpu: GPU hang detected on ring gfx0
+Call Trace:
+ [<ffffffff81234567>] gpu_reset_handler+0x100/0x200

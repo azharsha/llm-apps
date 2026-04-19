@@ -1,0 +1,7 @@
+Linux version 6.8.0-45-generic (buildd@lcy02)
+[  1.000000] Kernel panic - not syncing: Fatal exception
+CPU: 2 PID: 5678 Comm: kworker/2:1 Not tainted
+Call Trace:
+ [<ffffffff81234567>] panic+0x100/0x200
+ [<ffffffff8123789a>] do_exit+0x80/0x100
+ [<ffffffff8109abcd>] process_one_work+0x180/0x300

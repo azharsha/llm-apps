@@ -1,0 +1,3 @@
+[  678.901234] amdgpu 0000:03:00.0: amdgpu: CP_STALLED_STAT1: 0x00000080
+[  678.901235] amdgpu 0000:03:00.0: amdgpu: CP_STALLED_STAT2: 0x00000001
+[  678.901236] amdgpu 0000:03:00.0: amdgpu: Command processor stall detected

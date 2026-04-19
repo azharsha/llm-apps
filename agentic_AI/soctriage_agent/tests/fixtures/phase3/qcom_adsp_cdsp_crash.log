@@ -1,0 +1,14 @@
+Linux version 6.8.0-45-generic (buildd@lcy02)
+[  0.000000] Booting Linux on Qualcomm SM8550
+[  1.000000] adsp: subsystem crash
+[  1.000001] qcom_q6v5_pas adsp: watchdog trigger
+[  1.000002] qcom_q6v5_pas adsp: running nmi handler
+[  1.000003] Call Trace:
+[  1.000004]  [<ffffffff81234567>] rproc_report_crash+0x80/0x100
+[  1.000005]  [<ffffffff81234890>] crash_handler+0x60/0xc0
+[  3.000000] cdsp: subsystem crash
+[  3.000001] qcom_q6v5_pas cdsp: watchdog trigger
+[  3.000002] qcom_q6v5_pas cdsp: running nmi handler
+[  3.000003] Call Trace:
+[  3.000004]  [<ffffffff81234567>] rproc_report_crash+0x80/0x100
+[  3.000005]  [<ffffffff81234891>] crash_handler+0x60/0xc0

@@ -1,0 +1,3 @@
+[  234.567890] amdgpu 0000:03:00.0: amdgpu: [DC] atomic commit failed for display pipe 0
+[  234.567891] amdgpu 0000:03:00.0: amdgpu: [DC] Display engine commit error: -22
+[  234.567892] amdgpu 0000:03:00.0: amdgpu: [DC] DCN plane validation failed

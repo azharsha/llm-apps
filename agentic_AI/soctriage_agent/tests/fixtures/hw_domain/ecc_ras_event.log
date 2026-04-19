@@ -1,0 +1,3 @@
+[  890.123456] EDAC MC0: 1 CE memory error on CPU_SRC0 (node:0 card:0 page:0x12345 offset:0x0 grain:8 syndrome:0x0)
+[  890.123457] CE memory error: row 0, channel 0, label "CPU_SRC0:H#0:CH0"
+[  890.123458] EDAC: correctable error detected on memory controller

@@ -1,0 +1,3 @@
+[  901.234567] amdgpu 0000:03:00.0: amdgpu: xgmi_pcs_err: XGMI PCS error detected
+[  901.234568] amdgpu 0000:03:00.0: amdgpu: XGMI link 0 error: correctable
+[  901.234569] amdgpu 0000:03:00.0: amdgpu: xgmi_pcs_err status=0x00000001

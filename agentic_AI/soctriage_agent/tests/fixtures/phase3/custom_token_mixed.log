@@ -1,0 +1,8 @@
+Linux version 6.8.0-45-generic (buildd@lcy02)
+[  1.000000] Kernel panic - not syncing: Fatal exception
+CPU: 0 PID: 1 Comm: init Not tainted
+Call Trace:
+ [<ffffffff81234567>] panic+0x100/0x200
+my_custom_vendor_event: vendor subsystem fault code=0xDEAD
+my_custom_vendor_detail: register dump for vendor IP
+another_custom_event: secondary vendor fault

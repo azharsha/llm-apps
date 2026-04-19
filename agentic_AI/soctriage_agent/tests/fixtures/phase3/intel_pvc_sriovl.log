@@ -1,0 +1,9 @@
+Linux version 6.8.0-45-generic (buildd@lcy02)
+Ponte Vecchio (PVC) GT1 512 EU: hardware initialized
+[  1.000000] i915: GPU hang detected, resetting engine rcs0
+Call Trace:
+ [<ffffffff81234567>] engine_reset+0x100/0x200
+ [<ffffffff81234890>] intel_reset_handler+0x80/0x100
+RIP: 0010:gen8_emit_flush+0x4c/0x80
+RSP: 0018:ffffc90003c17b48 EFLAGS: 00010286
+[  7.000000] pci 0000:00:1c.0: PCIe Bus Error: severity=Uncorrected (Non-Fatal)
