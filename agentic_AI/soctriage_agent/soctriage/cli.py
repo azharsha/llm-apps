@@ -12,6 +12,10 @@ import itertools
 import logging
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from soctriage.core.token_rule import TokenRule
 
 EXIT_SUCCESS    = 0
 EXIT_NO_ANOMALY = 1
@@ -45,7 +49,32 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Force specific SoC provider by name")
     p.add_argument("--list-providers", action="store_true",
                    help="List all registered providers and exit")
+    p.add_argument("--token-rule", dest="extra_rules", action="append", default=[],
+                   metavar="TYPE:PATTERN",
+                   help="Inject an inline token rule. Format: token_type:pattern. Repeatable.")
+    p.add_argument("--plugin", dest="plugin_files", action="append", default=[],
+                   metavar="PATH",
+                   help="Load a Python plugin file containing @register_rule rules. Repeatable.")
     return p
+
+
+def _parse_inline_rule(rule_str: str) -> "TokenRule":  # noqa: F821
+    """Parse 'TYPE:PATTERN' into a TokenRule. Exits with code 3 if format is invalid."""
+    from soctriage.core.token_rule import TokenRule
+
+    token_type, sep, pattern = rule_str.partition(":")
+    if not sep:
+        print(
+            f"soctriage: --token-rule {rule_str!r}: invalid format, expected TYPE:PATTERN",
+            file=sys.stderr,
+        )
+        sys.exit(EXIT_INPUT_ERR)
+    return TokenRule(
+        token_type = token_type.strip(),
+        priority   = 190,
+        match_mode = "any",
+        patterns   = [pattern.strip()],
+    )
 
 
 def _build_registry():
@@ -142,13 +171,25 @@ def main() -> None:
     if args.verbose:
         print(f"[provider] selected: {provider.name()}", file=sys.stderr)
 
-    # ── Phase 2: tokenize ─────────────────────────────────────────────────────
+    # ── Phase 2: tokenize (with plugin rules + inline rules) ─────────────────
+    from soctriage.core.token_rule import TokenRuleRegistry
+    from soctriage.core.plugin import PluginLoader
     from soctriage.core.tokenizer import tokenize
+
+    rule_registry = TokenRuleRegistry()
+    rule_registry.load_defaults()
+
+    for pf in args.plugin_files:
+        PluginLoader.load_file(Path(pf), rule_registry)
+
+    for rule_str in args.extra_rules:
+        rule_registry.register(_parse_inline_rule(rule_str))
 
     all_lines = itertools.chain(iter(head_buf), line_iter)
     tokens = tokenize(
         all_lines,
         chip_gen_hint=args.asic_gen,
+        rule_registry=rule_registry,
     )
 
     # ── Phase 3: assemble + classify ─────────────────────────────────────────
