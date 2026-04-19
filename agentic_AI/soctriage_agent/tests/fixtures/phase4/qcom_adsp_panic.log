@@ -1,0 +1,15 @@
+Linux version 6.6.0-1014-qcom (buildd@snap-build) (gcc version 13.1.0)
+[    0.000000] Snapdragon SM8650 (Qualcomm) - chip_gen=qcom_sm8650
+[    0.000100] remoteproc remoteproc0: Booting fw image adsp.mbn, size 4194304
+[    0.000200] remoteproc remoteproc0: remote processor adsp is now up
+[    5.200000] adsp: subsystem crash
+[    5.200001] qcom_q6v5_mss: ADSP crashed: subsystem restart triggered
+[    5.200002] qcom_q6v5_mss: crash reason: watchdog timeout in ADSP thread
+[    5.200003] remoteproc remoteproc0: crash detected in remoteproc adsp
+[    5.200004] remoteproc remoteproc0: crash recovery failed, subsystem offline
+[    8.000000] Kernel panic - not syncing: ADSP crash unrecoverable, system halting
+[    8.000001] Call Trace:
+[    8.000002]  <TASK>
+[    8.000003]  qcom_q6v5_panic_handler+0x80/0xc0 [qcom_q6v5_mss]
+[    8.000004]  remoteproc_core_crash+0x60/0x80 [remoteproc]
+[    8.000005] RIP: 0010:panic+0x102/0x340

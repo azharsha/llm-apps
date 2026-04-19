@@ -1,0 +1,18 @@
+Linux version 6.8.0-45-generic (buildd@lcy02) (gcc version 13.2.0)
+[    0.000000] amdgpu: initializing kernel modesetting (Navi31 0x1002:0x744C)
+[    0.000100] amdgpu 0000:03:00.0: amdgpu: VRAM: 16368M 0x0000008000000000 - 0x000000FFFEFFFFFF (16368M used)
+[    2.300000] arm-smmu-v3 40000000.smmu: context fault (type=0x2, fsr=0x402, fsynr=0x0)
+[    2.300001] arm-smmu-v3 40000000.smmu: SMMU context fault on stream 0x0080 (sid=0x0080 ssid=0x0)
+[    2.300002] arm-smmu-v3: unhandled context fault: iova=0x0000000070000000
+[    2.300003] iommu fault: device=0000:03:00.0 iova=0x70000000
+[    3.400000] amdgpu 0000:03:00.0: amdgpu: ring gfx_0.0.0 timeout, signaled seq=180, emitted seq=181
+[    3.400001] amdgpu 0000:03:00.0: amdgpu: GPU HANG: ecode 4:1:5c8fffff in glxgears[2345]
+[    3.400002] amdgpu 0000:03:00.0: amdgpu: GPU recovery disabled, resetting GPU
+[    3.400003] amdgpu 0000:03:00.0: amdgpu: GPU hung with no ring reset possible
+[    8.500000] Kernel panic - not syncing: SMMU fault + GPU hang unrecoverable
+[    8.500001] Call Trace:
+[    8.500002]  <TASK>
+[    8.500003]  amdgpu_device_gpu_recover+0x120/0x340 [amdgpu]
+[    8.500004]  amdgpu_irq_handler+0x80/0xc0 [amdgpu]
+[    8.500005] RIP: 0010:panic+0x102/0x340
+[    8.500006] RSP: 0018:ffffc90003c17b48 EFLAGS: 00010282

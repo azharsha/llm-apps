@@ -40,9 +40,9 @@ class TokenContext:
     line_no:       int
     arch:          str              # "x86_64" | "arm64" | "unknown"
     chip_gen:      str              # "amd_cdna3" | "unknown" etc.
-    provider:      str              # "intel" | "amd" | "qcom" | "nvidia" | "unknown"
     recent_tokens: Sequence[Any]   # previous N LogTokens (may be a deque)
     recent_types:  Sequence[str]   # token_type values from preceding N tokens (may be a deque)
+    provider:      str = "unknown" # "intel" | "amd" | "qcom" | "nvidia" | "unknown"
 
 
 @dataclass

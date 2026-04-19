@@ -1,0 +1,17 @@
+Linux version 6.8.0-45-generic (buildd@lcy02) (gcc version 13.2.0)
+[    0.000000] Intel Xeon Scalable (Sapphire Rapids) - x86_64
+[    0.000100] Machine check events logged
+[    0.000200] mce: [Hardware Error]: Machine check events logged
+[    2.100000] mce: [Hardware Error]: CPU 4: Machine Check Exception: 5 Bank 1: 9400004000000800
+[    2.100001] mce: [Hardware Error]: RIP !INEXACT! 10:<ffffffff810a3c80> {default_idle+0x0/0x20}
+[    2.100002] Machine check events logged: uncorrectable memory error on DIMM A0
+[    4.200000] BUG: KASAN: slab-use-after-free in kmalloc_large+0x80/0x100
+[    4.200001] Read of size 8 at addr ffff888103400000 by task kworker/0:0/45
+[    4.200002] kasan: GPF could be caused by NULL-ptr deref or user memory access
+[    4.200003] KASAN: memory fault detected at 0xffff888103400000
+[    6.300000] Kernel panic - not syncing: Fatal exception in interrupt
+[    6.300001] Call Trace:
+[    6.300002]  <TASK>
+[    6.300003]  kasan_report+0x180/0x200
+[    6.300004]  __asan_load8+0x64/0x80
+[    6.300005] RIP: 0010:panic+0x102/0x340

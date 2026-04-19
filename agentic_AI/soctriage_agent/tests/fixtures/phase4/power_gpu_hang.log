@@ -1,0 +1,11 @@
+Linux version 6.8.0-45-generic (buildd@lcy02) (gcc version 13.2.0)
+[    0.000000] amdgpu: MI300X (CDNA3) detected, chip_gen=amd_cdna3
+[    0.000100] amdgpu 0000:03:00.0: amdgpu: GFX12 v1.0.0 initialized
+[    2.000000] regulator: vddgfx: failed to set voltage (request: 800mV, limit: 750mV)
+[    2.000001] regulator: GPU supply undervoltage detected
+[    2.000002] PMIC: vddgfx rail collapsed, emergency shutdown initiated
+[    2.000003] undervoltage: amdgpu power domain entering emergency state
+[    4.000000] amdgpu 0000:03:00.0: amdgpu: ring gfx_0.0.0 timeout, power loss on GFX domain
+[    4.000001] amdgpu 0000:03:00.0: amdgpu: GPU HANG: ecode 4:2:ffffffff power domain offline
+[    4.000002] amdgpu 0000:03:00.0: amdgpu: PMFW: GFX power rail failure confirmed
+[    4.000003] amdgpu 0000:03:00.0: amdgpu: Unable to recover — power fault unresolved

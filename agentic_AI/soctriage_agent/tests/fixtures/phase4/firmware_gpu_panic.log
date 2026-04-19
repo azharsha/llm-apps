@@ -1,0 +1,24 @@
+Linux version 6.8.0-45-generic (buildd@lcy02) (gcc version 13.2.0)
+[    0.000000] Intel DG2 (Alchemist) GT2 512EU initialized
+[    0.000000] i915: Loading firmware i915/dg2_guc_70.bin
+[    1.234567] i915: firmware load failed: -ENOENT
+[    1.234600] i915: GuC firmware i915/dg2_guc_70.bin load failed with err -2
+[    1.234650] i915: HuC firmware i915/dg2_huc.bin load failed with err -2
+[    1.234700] i915: firmware: GuC submission disabled
+[    1.235000] i915: ERROR: firmware not loaded, GPU rings unavailable
+[    5.100000] i915: ring timeout on rcs0 — GPU hang detected
+[    5.100100] i915: GPU HANG: ecode 12:1:857ffffb, in gem_execbuf [1234]
+[    5.100200] i915: GPU hang detected on rcs0, reset in progress
+[    5.100300] i915: context reset: engine rcs0 reset
+[    5.100400] i915: Resetting chip after gpu hang
+[    5.100500] i915: GPU reset failed
+[    5.100600] i915: Aborting GPU hang recovery
+[   10.200000] Kernel panic - not syncing: GPU hang unrecoverable
+[   10.200001] Call Trace:
+[   10.200002]  <TASK>
+[   10.200003]  i915_reset_engines+0x210/0x380 [i915]
+[   10.200004]  intel_gt_handle_error+0x180/0x200 [i915]
+[   10.200005]  intel_engine_cs_reset+0x90/0xc0 [i915]
+[   10.200006] RIP: 0010:panic+0x102/0x340
+[   10.200007] RSP: 0018:ffffc90003c17b48 EFLAGS: 00010286
+[   10.200008] RAX: 0000000000000044 RBX: ffffffff82a9f900

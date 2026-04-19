@@ -1,0 +1,11 @@
+Linux version 6.6.0-28-generic (buildd@lcy01) (gcc version 13.2.0)
+[    0.000000] Generic ARM SoC initialized
+[    1.500000] pcieport 0000:00:1c.0: PCIe Bus Error: severity=Uncorrected (Non-Fatal), type=Transaction Layer, id=0x0100(Requester ID)
+[    1.500001] pcieport 0000:00:1c.0: PCIe Bus Error: aer_status=0x00100000, aer_mask=0x00000000
+[    1.500002] pcieport 0000:00:1c.0: ECRC error detected, link going down
+[    2.100000] arm-smmu: context fault on stream id=0x80, iova=0x000000ff00000000
+[    2.100001] arm-smmu: SMMU context fault: fsr=0x40000002 fsynr=0x00000000
+[    2.100002] iommu fault: device failed to map DMA buffer
+[    3.200000] amdgpu 0000:01:00.0: ring gfx timeout, signaled seq=42, emitted seq=43
+[    3.200001] amdgpu 0000:01:00.0: amdgpu: GPU HANG: ecode 4:0:ffffffff
+[    3.200002] amdgpu 0000:01:00.0: amdgpu: Starting recovery for ring gfx

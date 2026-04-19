@@ -59,6 +59,37 @@ class AnalysisReport(TypedDict):
     ascii_diagram:    str
 
 
+# ── Schema sentinel (used by tests and LLM agent for field discovery) ─────────
+
+OUTPUT_SCHEMA: dict = {
+    "kernel_version":  None,
+    "architecture":    "",
+    "asic_generation": "",
+    "soc_provider":    "",
+    "total_events":    0,
+    "severity":        "",
+    "root_cause":      None,
+    "cascade":         [],
+    "events": [
+        {
+            "event_id":         0,
+            "event_type":       "",
+            "severity":         "",
+            "subsystem":        "",
+            "ip_block":         "",
+            "ip_root_cause":    None,
+            "ip_cascade_chain": [],
+            "llm_rca":          None,
+            "start_line":       0,
+            "end_line":         0,
+            "confidence":       0.0,
+            "provider":         "",
+        }
+    ],
+    "ascii_diagram": "",
+}
+
+
 # ── Rendering ─────────────────────────────────────────────────────────────────
 
 

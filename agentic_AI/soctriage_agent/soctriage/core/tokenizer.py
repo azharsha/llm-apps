@@ -232,7 +232,7 @@ def _default_registry() -> TokenRuleRegistry:
 _CHIP_GEN_PREFIX_TO_PROVIDER: dict[str, str] = {
     "intel":   "intel",
     "amd":     "amd",
-    "qcom":    "qcom",
+    "qcom":    "qualcomm",
     "nvidia":  "nvidia",
 }
 
