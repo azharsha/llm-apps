@@ -13,7 +13,10 @@ from typing import Any
 import pytest
 
 from soctriage.core.assembler import LogEvent
-from soctriage.core.cascade import CascadeEdge, CascadeResult, analyse
+from soctriage.core.cascade import (
+    CascadeEdge, CascadeResult, analyse,
+    _break_cycles, _has_cycle, _get_provider_rules,
+)
 from soctriage.core.soc_provider import SoCProvider
 from soctriage.core.tokenizer import LogToken
 
@@ -311,8 +314,7 @@ def test_intel_ci01_guc_firmware_fail_confidence():
     """Intel provider: firmware_fail → gpu_hang uses CI-01 (conf=0.95) not CR-07 (0.90)."""
     e1 = _make_event(1, "firmware_fail", "error",    "firmware", start_line=1,  chip_gen="intel_dg2")
     e2 = _make_event(2, "gpu_hang",      "critical", "gpu",      start_line=20, chip_gen="intel_dg2")
-    provider = _StubProvider("intel_xe")
-    result = analyse([e1, e2], provider=provider)
+    result = analyse([e1, e2], use_provider_rules=True)
     causes = [e for e in result.edges
               if e.source_id == 1 and e.target_id == 2 and e.relation == "causes"]
     assert len(causes) == 1
@@ -323,8 +325,7 @@ def test_amd_ca01_psp_fail_causes_panic():
     """AMD provider: firmware_fail → kernel_panic uses CA-01 (conf=0.95) not CR-08 (0.85)."""
     e1 = _make_event(1, "firmware_fail", "error",    "firmware", start_line=1,  chip_gen="amd_rdna3")
     e2 = _make_event(2, "kernel_panic",  "critical", "cpu",      start_line=30, chip_gen="amd_rdna3")
-    provider = _StubProvider("amd_gpu")
-    result = analyse([e1, e2], provider=provider)
+    result = analyse([e1, e2], use_provider_rules=True)
     causes = [e for e in result.edges
               if e.source_id == 1 and e.target_id == 2 and e.relation == "causes"]
     assert len(causes) == 1
@@ -335,8 +336,7 @@ def test_qcom_cq01_adsp_crash_causes_panic():
     """Qualcomm provider: soc_crash → kernel_panic uses CQ-01 (conf=0.90)."""
     e1 = _make_event(1, "soc_crash",    "critical", "remoteproc", start_line=1,  chip_gen="qcom_sm8650")
     e2 = _make_event(2, "kernel_panic", "critical", "cpu",        start_line=20, chip_gen="qcom_sm8650")
-    provider = _StubProvider("qualcomm")
-    result = analyse([e1, e2], provider=provider)
+    result = analyse([e1, e2], use_provider_rules=True)
     causes = [e for e in result.edges
               if e.source_id == 1 and e.target_id == 2 and e.relation == "causes"]
     assert len(causes) == 1
@@ -347,8 +347,8 @@ def test_ec26_no_provider_uses_core_rules_only():
     """Without a provider, chip_gen="intel_dg2" must NOT get Intel-specific rules."""
     e1 = _make_event(1, "firmware_fail", "error",    "firmware", start_line=1,  chip_gen="intel_dg2")
     e2 = _make_event(2, "gpu_hang",      "critical", "gpu",      start_line=20, chip_gen="intel_dg2")
-    # No provider → core rules only → CR-07 confidence=0.90, NOT CI-01=0.95
-    result = analyse([e1, e2], provider=None)
+    # No provider rules → core rules only → CR-07 confidence=0.90, NOT CI-01=0.95
+    result = analyse([e1, e2])
     causes = [e for e in result.edges
               if e.source_id == 1 and e.target_id == 2 and e.relation == "causes"]
     assert len(causes) == 1
@@ -359,17 +359,23 @@ def test_ec26_no_provider_uses_core_rules_only():
 
 
 def test_ec23_cycle_detected_and_broken():
-    """Introduce an artificial cycle: A→B→A. analyse() must not hang or crash."""
-    # gpu_hang (E1) → kernel_panic (E2): valid edge
-    # We cannot create a reverse edge through the rule table (kernel_panic has no outgoing rules).
-    # Instead test that analyse completes and returns a valid CascadeResult.
-    # A "real" cycle would require manual edge injection; here we verify robustness.
-    e1 = _make_event(1, "gpu_hang",     "critical", "gpu", start_line=1)
-    e2 = _make_event(2, "kernel_panic", "critical", "cpu", start_line=20)
-    result = analyse([e1, e2])
-    assert isinstance(result, CascadeResult)
-    # No cycle should exist in normal rule output
-    assert result.event_count == 2
+    """_break_cycles removes the lowest-confidence edge to resolve a manually crafted cycle A→B→A."""
+    # Craft a cycle: E1→E2 (high conf) and E2→E1 (low conf)
+    edge_fwd = CascadeEdge(source_id=1, target_id=2, relation="causes",
+                           confidence=0.80, reasoning="gpu hang → panic")
+    edge_rev = CascadeEdge(source_id=2, target_id=1, relation="causes",
+                           confidence=0.50, reasoning="artificial reverse (lower confidence)")
+
+    # Verify the cycle is detected before breaking
+    adj: dict[int, list[int]] = {1: [2], 2: [1]}
+    assert _has_cycle(adj, [1, 2]), "_has_cycle must detect the A→B→A cycle"
+
+    # Break the cycle — lowest-confidence edge (edge_rev, 0.50) must be removed
+    broken = _break_cycles([edge_fwd, edge_rev], [1, 2])
+
+    assert len(broken) == 1, "One edge must remain after breaking the cycle"
+    assert broken[0].source_id == 1 and broken[0].target_id == 2, \
+        "The lower-confidence reverse edge must be the one removed"
 
 
 def test_ec25_max_edges_enforced():
@@ -469,8 +475,7 @@ def test_qcom_adsp_panic_fixture():
                      chip_gen="qcom_sm8650")
     e2 = _make_event(2, "kernel_panic", "critical", "cpu",        start_line=15, end_line=25,
                      chip_gen="qcom_sm8650")
-    provider = _StubProvider("qualcomm")
-    result = analyse([e1, e2], provider=provider)
+    result = analyse([e1, e2], use_provider_rules=True)
     assert result.root_cause_id == e1.event_id
     rc_ev = next(e for e in result.events if e.event_id == result.root_cause_id)
     assert rc_ev.event_type == "soc_crash"
@@ -496,10 +501,63 @@ def test_power_gpu_hang_fixture_amd_provider():
                      chip_gen="amd_cdna3")
     e2 = _make_event(2, "gpu_hang",    "critical", "gpu",   start_line=10, end_line=20,
                      chip_gen="amd_cdna3")
-    provider = _StubProvider("amd_gpu")
-    result = analyse([e1, e2], provider=provider)
+    result = analyse([e1, e2], use_provider_rules=True)
     causes = [e for e in result.edges
               if e.source_id == 1 and e.target_id == 2 and e.relation == "causes"]
     assert len(causes) == 1
     assert causes[0].confidence == pytest.approx(0.85)
     assert result.root_cause_id == e1.event_id
+
+
+# ── New tests added by phase 4 code review ────────────────────────────────────
+
+
+def test_chip_gen_prefixes_match_provider_rules():
+    """All tokenizer chip_gen prefixes must route to a non-empty provider rule set in cascade."""
+    from soctriage.core.tokenizer import _CHIP_GEN_PREFIX_TO_PROVIDER
+    for prefix in _CHIP_GEN_PREFIX_TO_PROVIDER:
+        rules = _get_provider_rules(f"{prefix}_test")
+        assert len(rules) > 0, f"No provider rules for chip_gen prefix '{prefix}_'"
+
+
+def test_ec28_performance_10k_adversarial():
+    """analyse() must complete in < 500ms for 10,000 events with many rule matches."""
+    events = []
+    for i in range(1, 5001):
+        events.append(_make_event(i * 2 - 1, "warning_event", "warning", "cpu", start_line=i * 2 - 1))
+        events.append(_make_event(i * 2,     "gpu_hang",      "critical", "gpu", start_line=i * 2))
+    t0 = time.perf_counter()
+    result = analyse(events, max_edges=500)
+    elapsed = time.perf_counter() - t0
+    assert elapsed < 0.5, f"adversarial analyse() took {elapsed:.3f}s > 500ms"
+    assert result.event_count > 0
+
+
+def test_e2e_firmware_gpu_panic_pipeline():
+    """Full pipeline: tokenize → assemble → cascade on firmware_gpu_panic.log fixture."""
+    import pathlib
+    from soctriage.core.tokenizer import tokenize
+    from soctriage.core.assembler import assemble
+
+    fixture = pathlib.Path(__file__).parent / "fixtures" / "phase4" / "firmware_gpu_panic.log"
+    lines = iter(fixture.read_text().splitlines())
+    tokens = list(tokenize(lines))
+    events = list(assemble(tokens))
+    assert len(events) > 0, "Pipeline must produce at least one event from the fixture log"
+
+    result = analyse(events)
+    assert isinstance(result, CascadeResult)
+    assert result.event_count > 0
+    assert result.root_cause_id is not None, "Cascade must identify a root cause in this log"
+
+
+def test_output_schema_keys_match_to_dict():
+    """OUTPUT_SCHEMA top-level keys must exactly match CascadeResult.to_dict() keys."""
+    from soctriage.core.reporter import OUTPUT_SCHEMA
+    ev = _make_event(1, "firmware_fail", "error", "firmware", 1, 10, "intel_dg2", "x86_64", "6.8.0")
+    result = analyse([ev])
+    actual_keys = set(result.to_dict().keys())
+    schema_keys = set(OUTPUT_SCHEMA.keys())
+    assert actual_keys == schema_keys, (
+        f"to_dict() keys {actual_keys} differ from OUTPUT_SCHEMA keys {schema_keys}"
+    )

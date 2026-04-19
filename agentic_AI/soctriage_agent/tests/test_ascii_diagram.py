@@ -179,3 +179,32 @@ def test_render_line_width_under_80_chars():
     output = render(result)
     for i, line in enumerate(output.splitlines()):
         assert len(line) < 80, f"Line {i} is {len(line)} chars: {line!r}"
+
+
+def test_render_line_width_under_80_chars_stress():
+    """Line width must stay under 80 chars with large event_id, long type/subsystem, and ROOT CAUSE tag."""
+    e1 = _make_event(
+        99999, "very_long_event_type_name_here", "error",
+        subsystem="interconnect_pcie_root", start_line=1, end_line=5,
+    )
+    e2 = _make_event(
+        100000, "another_long_event_type_name", "critical",
+        subsystem="graphics_memory_controller", start_line=6, end_line=10,
+    )
+    edge = CascadeEdge(
+        source_id=99999, target_id=100000,
+        relation="causes", confidence=0.85,
+        reasoning="long reasoning string that could overflow if not capped by truncation logic",
+    )
+    result = CascadeResult(
+        events=[e1, e2], edges=[edge],
+        root_cause_id=99999, root_cause_conf=0.85,
+        severity="critical",
+        subsystems_hit=["interconnect_pcie_root", "graphics_memory_controller",
+                        "cpu_core", "memory_bank", "io_fabric", "dsp_core"],
+        chip_gen="intel_dg2", arch="x86_64", kernel_ver="6.8.0-45",
+        ascii_diagram="", event_count=2, critical_count=1, error_count=1, analysis_ns=0,
+    )
+    output = render(result)
+    for i, line in enumerate(output.splitlines()):
+        assert len(line) < 80, f"Stress test line {i} is {len(line)} chars: {line!r}"

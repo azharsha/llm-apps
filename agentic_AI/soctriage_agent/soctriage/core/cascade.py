@@ -18,11 +18,14 @@ import logging
 import time
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 from soctriage.core.assembler import LogEvent
 
-__all__ = ["CascadeEdge", "CascadeResult", "analyse"]
+__all__ = [
+    "CascadeEdge", "CascadeResult", "analyse",
+    "_break_cycles", "_has_cycle", "_get_provider_rules",
+]
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +43,7 @@ _RC_EVENT_CONF_WEIGHT: float = 0.3  # weight of event.confidence in root-cause s
 class CascadeEdge:
     source_id:  int
     target_id:  int
-    relation:   str    # "causes" | "precedes" | "correlates" | "masks"
+    relation:   str    # "causes" | "precedes" | "correlates" | "masks" (reserved — no rules use "masks" yet)
     confidence: float  # 0.0–1.0
     reasoning:  str    # one-line human-readable reason
 
@@ -64,6 +67,8 @@ class CascadeResult:
     critical_count:  int
     error_count:     int
     analysis_ns:     int
+    warning_count:   int = 0
+    info_count:      int = 0
 
     def to_dict(self) -> dict:
         """Serialise to JSON-compatible dict for LLM agent tool response."""
@@ -104,6 +109,8 @@ class CascadeResult:
                 "event_count":    self.event_count,
                 "critical_count": self.critical_count,
                 "error_count":    self.error_count,
+                "warning_count":  self.warning_count,
+                "info_count":     self.info_count,
             },
             "ascii_diagram": self.ascii_diagram,
         }
@@ -548,9 +555,9 @@ def _apply_hw_boosts(
 def analyse(
     events: list[LogEvent],
     *,
-    max_edges:      int   = 500,
-    min_confidence: float = 0.15,
-    provider: Any         = None,
+    max_edges:          int   = 500,
+    min_confidence:     float = 0.15,
+    use_provider_rules: bool  = False,
 ) -> CascadeResult:
     """
     Analyse a list of classified LogEvents and produce a CascadeResult.
@@ -579,11 +586,9 @@ def analyse(
             chip_gen = ev.chip_gen
             break
 
-    # Combine rules: provider-specific first (higher priority), then core
-    if provider is not None:
-        prov_rules = _get_provider_rules(chip_gen)
-    else:
-        prov_rules = []
+    # Combine rules: provider-specific first (higher priority), then core.
+    # Provider rules are selected by chip_gen prefix, not by a provider object.
+    prov_rules = _get_provider_rules(chip_gen) if use_provider_rules else []
 
     combined_rules = prov_rules + _CORE_RULES
 
@@ -629,6 +634,8 @@ def analyse(
 
     critical_count = sum(1 for ev in deduped if ev.severity == "critical")
     error_count    = sum(1 for ev in deduped if ev.severity == "error")
+    warning_count  = sum(1 for ev in deduped if ev.severity == "warning")
+    info_count     = sum(1 for ev in deduped if ev.severity == "info")
 
     result = CascadeResult(
         events=deduped,
@@ -645,6 +652,8 @@ def analyse(
         critical_count=critical_count,
         error_count=error_count,
         analysis_ns=time.perf_counter_ns() - t0,
+        warning_count=warning_count,
+        info_count=info_count,
     )
 
     return result

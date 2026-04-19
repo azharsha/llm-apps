@@ -60,32 +60,40 @@ class AnalysisReport(TypedDict):
 
 
 # ── Schema sentinel (used by tests and LLM agent for field discovery) ─────────
+# Mirrors exactly what CascadeResult.to_dict() returns.
 
 OUTPUT_SCHEMA: dict = {
-    "kernel_version":  None,
-    "architecture":    "",
-    "asic_generation": "",
-    "soc_provider":    "",
-    "total_events":    0,
-    "severity":        "",
-    "root_cause":      None,
-    "cascade":         [],
-    "events": [
+    "root_cause": {
+        "event_id":   0,
+        "event_type": "",
+        "subsystem":  "",
+        "severity":   "",
+        "confidence": 0.0,
+        "start_line": 0,
+        "end_line":   0,
+        "raw_text":   "",
+    },
+    "cascade": [
         {
-            "event_id":         0,
-            "event_type":       "",
-            "severity":         "",
-            "subsystem":        "",
-            "ip_block":         "",
-            "ip_root_cause":    None,
-            "ip_cascade_chain": [],
-            "llm_rca":          None,
-            "start_line":       0,
-            "end_line":         0,
-            "confidence":       0.0,
-            "provider":         "",
+            "from":       "",
+            "to":         "",
+            "relation":   "",
+            "confidence": 0.0,
+            "reasoning":  "",
         }
     ],
+    "summary": {
+        "chip_gen":       "",
+        "arch":           "",
+        "kernel_ver":     None,
+        "severity":       "",
+        "subsystems_hit": [],
+        "event_count":    0,
+        "critical_count": 0,
+        "error_count":    0,
+        "warning_count":  0,
+        "info_count":     0,
+    },
     "ascii_diagram": "",
 }
 

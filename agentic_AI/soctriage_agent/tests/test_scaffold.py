@@ -187,12 +187,15 @@ def test_exit_code_constants():
 # ── AC-P0-14: OUTPUT_SCHEMA structure ────────────────────────────────────────
 def test_output_schema_structure():
     from soctriage.core.reporter import OUTPUT_SCHEMA
-    required = {"kernel_version","architecture","asic_generation",
-                "soc_provider","total_events","events"}
-    assert required.issubset(set(OUTPUT_SCHEMA.keys()))
-    assert "ip_root_cause"    in OUTPUT_SCHEMA["events"][0]
-    assert "ip_cascade_chain" in OUTPUT_SCHEMA["events"][0]
-    assert "llm_rca"          in OUTPUT_SCHEMA["events"][0]
+    # Schema mirrors CascadeResult.to_dict() exactly
+    required_top = {"root_cause", "cascade", "summary", "ascii_diagram"}
+    assert required_top == set(OUTPUT_SCHEMA.keys())
+    required_summary = {"chip_gen", "arch", "kernel_ver", "severity",
+                        "subsystems_hit", "event_count", "critical_count",
+                        "error_count", "warning_count", "info_count"}
+    assert required_summary == set(OUTPUT_SCHEMA["summary"].keys())
+    required_cascade_entry = {"from", "to", "relation", "confidence", "reasoning"}
+    assert required_cascade_entry == set(OUTPUT_SCHEMA["cascade"][0].keys())
 
 
 # ── AC-P0-15: All manifest.yaml files load cleanly ───────────────────────────

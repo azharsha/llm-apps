@@ -60,7 +60,7 @@ def _topological_order(
             if in_degree[nxt] == 0 and nxt not in visited:
                 queue.append(nxt)
 
-    # Append any events not reached by the traversal (disconnected)
+    # Append disconnected events in their original log order (preserved from analyse())
     for ev in events:
         if ev.event_id not in visited:
             order.append(ev)
@@ -84,7 +84,7 @@ def render(result: CascadeResult) -> str:
     kver = result.kernel_ver or "unknown"
 
     top    = "╔" + "═" * 58 + "╗"
-    title  = "║" + "           SoCTriage Cascade Analysis" + " " * 21 + "║"
+    title  = "║" + "SoCTriage Cascade Analysis".center(58) + "║"
     # keep the info line ≤ 60 chars total (box chars inclusive)
     info_inner = f"  chip: {chip:<10}  arch: {arch:<7}  kernel: {kver:<10}"
     info_inner = info_inner[:58]
@@ -111,10 +111,15 @@ def render(result: CascadeResult) -> str:
         for ev in ordered:
             is_root = ev.event_id == result.root_cause_id
             tag = "← ROOT CAUSE" if is_root else ""
-            lines.append(
-                f"  [E{ev.event_id}] {ev.event_type:<22}"
-                f" subsystem={ev.subsystem:<12} conf={ev.confidence:.2f}  {tag}"
+            # Truncate fields so the line stays under 80 chars regardless of event_id length
+            event_type_str = ev.event_type[:18]
+            subsystem_str  = ev.subsystem[:12]
+            body = (
+                f"  [E{ev.event_id}] {event_type_str:<18}"
+                f" subsystem={subsystem_str:<12} conf={ev.confidence:.2f}"
             )
+            line = f"{body[:65]}  {tag}" if tag else body
+            lines.append(line)
             lines.append(
                 f"       lines {ev.start_line}–{ev.end_line:<6}"
                 f" severity={ev.severity.upper()}"
@@ -144,7 +149,9 @@ def render(result: CascadeResult) -> str:
         rc_line = "  Root Cause : none"
 
     subsys_chain = " → ".join(result.subsystems_hit) or "none"
-    warn_count = result.event_count - result.critical_count - result.error_count
+    # Cap subsystem chain to keep footer line ≤ 79 chars ("  Subsystems : " = 16 chars)
+    if len(subsys_chain) > 62:
+        subsys_chain = subsys_chain[:61] + "…"
 
     lines += [
         "",
@@ -155,7 +162,7 @@ def render(result: CascadeResult) -> str:
         f"  Events     : {result.event_count} total"
         f"  ({result.critical_count} critical"
         f" · {result.error_count} error"
-        f" · {warn_count} warning)",
+        f" · {result.warning_count} warning)",
         sep,
     ]
 
