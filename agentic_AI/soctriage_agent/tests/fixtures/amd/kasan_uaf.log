@@ -1,0 +1,5 @@
+[  678.901234] BUG: KASAN: use-after-free in amdgpu_bo_free_kernel+0x48/0xa0
+[  678.901235] Read of size 8 at addr ffff888012345678 by task kworker/u8:2/1234
+[  678.901236] Call trace:
+[  678.901237]  amdgpu_bo_free_kernel+0x48/0xa0
+[  678.901238]  amdgpu_device_fini+0x234/0x400

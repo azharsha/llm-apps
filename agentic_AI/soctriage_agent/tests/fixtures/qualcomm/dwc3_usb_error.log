@@ -1,0 +1,3 @@
+[   44.567890] dwc3-msm a600000.ssusb: xHCI operation failed: -110
+[   44.567891] dwc3-msm a600000.ssusb: Failed to enable xHCI
+[   44.567892] xhci-hcd xhci-hcd.0.auto: HC died; cleaning up

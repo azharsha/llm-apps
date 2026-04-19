@@ -1,0 +1,29 @@
+name: Intel Xe/Gen Graphics
+version: "0.1.0"
+detection_keywords:
+  - i915
+  - xe driver
+  - drm/i915
+  - GuC
+  - HuC
+  - intel_iommu
+  - thunderbolt
+  - usb4
+  - GEN12
+  - Xe HP
+  - DG2
+  - Flex Series
+  - Meteor Lake
+supported_chip_families:
+  - gen9
+  - gen11
+  - gen12
+  - dg1
+  - dg2
+  - xe_hp
+  - xe_hpg
+  - xe_hpc
+  - xe2
+  - mtl
+maintainer: ""
+schema_version: "1"

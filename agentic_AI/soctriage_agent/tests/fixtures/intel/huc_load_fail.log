@@ -1,0 +1,3 @@
+[    5.234567] i915 0000:00:02.0: HuC firmware load failed: -110
+[    5.234568] i915 0000:00:02.0: HuC: Failed to load firmware huc_mtp.bin
+[    5.234569] i915 0000:00:02.0: drm/i915: HuC authentication failed

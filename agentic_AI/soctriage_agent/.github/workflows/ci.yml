@@ -1,0 +1,43 @@
+name: SoCTriage Phase 0 CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: mypy — 0 errors required
+        run: mypy soctriage/
+
+      - name: pytest — 20 PASSED, 6 XFAIL required
+        run: |
+          pytest tests/test_scaffold.py -v \
+            --tb=short \
+            --cov=soctriage \
+            --cov-report=term-missing
+
+      - name: CLI smoke test — all 5 providers listed
+        run: python -m soctriage.cli --list-providers
+
+      - name: Phase 1 — Input Handler tests
+        run: |
+          pytest tests/test_input_handler.py -v \
+            --tb=short \
+            --cov=soctriage/core/input_handler \
+            --cov-fail-under=85
+
+      - name: Phase 1 — mypy input_handler
+        run: mypy soctriage/core/input_handler.py

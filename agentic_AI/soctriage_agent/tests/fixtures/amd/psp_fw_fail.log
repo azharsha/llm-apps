@@ -1,0 +1,3 @@
+[    8.901234] amdgpu_psp: PSP firmware load failed: -110
+[    8.901235] amdgpu_psp: Failed to load PSP SOS firmware
+[    8.901236] amdgpu 0000:03:00.0: amdgpu: PSP initialization failed

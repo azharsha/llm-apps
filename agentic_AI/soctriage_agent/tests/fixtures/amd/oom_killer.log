@@ -1,0 +1,3 @@
+[  789.012345] Out of memory: Killed process 4567 (amdgpu_test) total-vm:8388608kB, anon-rss:4194304kB
+[  789.012346] oom_reaper: reaped process 4567 (amdgpu_test), now anon-rss:0kB, file-rss:0kB
+[  789.012347] amdgpu 0000:03:00.0: amdgpu: Process killed by OOM

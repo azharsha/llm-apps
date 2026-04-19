@@ -1,0 +1,22 @@
+name: AMD RDNA/CDNA
+version: "0.1.0"
+detection_keywords:
+  - amdgpu
+  - drm/amd
+  - GRBM_STATUS
+  - amd_iommu
+  - kfd
+  - amdgpu_psp
+  - SDMA_STATUS
+  - CP_STALLED
+supported_asic_generations:
+  - cdna1
+  - cdna2
+  - cdna3
+  - navi
+  - rdna2
+  - rdna3
+  - pre_navi
+  - unknown
+maintainer: ""
+schema_version: "1"

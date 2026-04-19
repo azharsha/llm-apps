@@ -1,0 +1,4 @@
+[   33.456789] arm-smmu 15000000.iommu: Unhandled context fault: fsr=0x402, iova=0xbadcafe000
+[   33.456790] arm-smmu 15000000.iommu: FAR = 0x0000000badcafe00
+[   33.456791] arm-smmu 15000000.iommu: FSYNR0 = 0x00000002
+[   33.456792] qcom_smmu: context fault at IOVA 0xbadcafe000

@@ -1,0 +1,3 @@
+[   67.890123] pcieport 0000:00:1c.0: AER: Corrected error received: 0000:00:02.0
+[   67.890124] i915 0000:00:02.0: AER: PCIe Bus Error: severity=Corrected, type=Physical Layer
+[   67.890125] i915 0000:00:02.0: AER: Receiver Error detected

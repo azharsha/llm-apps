@@ -1,0 +1,3 @@
+[   99.012345] venus: firmware not responding on msm_vidc_core0
+[   99.012346] venus: video core timeout waiting for CORE_INIT
+[   99.012347] venus: fw_loading: firmware timeout after 3000ms

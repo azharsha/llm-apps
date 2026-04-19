@@ -1,0 +1,8 @@
+[  901.234567] Unable to handle kernel paging request at virtual address ffff000012345678
+[  901.234568] Mem abort info:
+[  901.234569]   ESR_EL1 = 0x0000000096000006
+[  901.234570]   EC = 0x25: DABT (current EL), IL = 32 bits
+[  901.234571] pc : amdgpu_device_reset+0x88/0x200
+[  901.234572] lr : amdgpu_device_reset+0x60/0x200
+[  901.234573] Call trace:
+[  901.234574]  amdgpu_device_reset+0x88/0x200

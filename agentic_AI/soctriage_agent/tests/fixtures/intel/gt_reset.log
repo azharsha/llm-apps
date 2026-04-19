@@ -1,0 +1,4 @@
+[  123.456789] i915 0000:00:02.0: GPU reset
+[  123.456790] i915 0000:00:02.0: drm/i915: Resetting chip after gpu hang
+[  123.456791] i915 0000:00:02.0: GT0: GUC: submission disabled
+[  123.456792] i915 0000:00:02.0: GT0: reset failed

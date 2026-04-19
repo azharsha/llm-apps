@@ -1,0 +1,3 @@
+[   22.345678] usb4: link state change on port 1: DISABLED -> RX_DETECT
+[   22.345679] usb4: port 1 link down error: CL0s entry failed
+[   22.345680] usb4: USB4 router 1: link state change failed

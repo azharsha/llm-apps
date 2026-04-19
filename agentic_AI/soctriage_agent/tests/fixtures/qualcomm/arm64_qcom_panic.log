@@ -1,0 +1,9 @@
+[  201.234567] Unable to handle kernel NULL pointer dereference at virtual address 0000000000000010
+[  201.234568] Mem abort info:
+[  201.234569]   ESR_EL1 = 0x0000000096000004
+[  201.234570]   EC = 0x25: DABT (current EL), IL = 32 bits
+[  201.234571] pc : qcom_smmu_fault_handler+0x48/0x120
+[  201.234572] lr : qcom_smmu_fault_handler+0x20/0x120
+[  201.234573] Call trace:
+[  201.234574]  qcom_smmu_fault_handler+0x48/0x120
+[  201.234575]  __arm64_sys_ioctl+0x28/0x40

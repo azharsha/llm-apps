@@ -1,0 +1,19 @@
+name: NVIDIA GPU
+version: "0.1.0"
+detection_keywords:
+  - nvidia
+  - nouveau
+  - nvkm
+  - XID
+  - NVRM
+  - NVLink
+  - nvme
+  - pstate
+supported_chip_families:
+  - turing
+  - ampere
+  - hopper
+  - ada
+  - blackwell
+maintainer: ""
+schema_version: "1"

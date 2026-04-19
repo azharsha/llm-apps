@@ -1,0 +1,3 @@
+[  234.567890] amdgpu 0000:03:00.0: amdgpu: Aldebaran compute ring timeout
+[  234.567891] amdgpu 0000:03:00.0: amdgpu: MI200 series ASIC reset triggered
+[  234.567892] amdgpu 0000:03:00.0: amdgpu: compute ring comp_1.0.0 timed out

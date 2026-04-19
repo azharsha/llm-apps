@@ -1,0 +1,25 @@
+name: Qualcomm MSM/Snapdragon
+version: "0.1.0"
+detection_keywords:
+  - msm
+  - qcom
+  - adreno
+  - kgsl
+  - qcom_smmu
+  - dwc3-msm
+  - qmp-phy
+  - llcc
+  - venus
+  - camss
+supported_chip_families:
+  - msm8998
+  - sdm845
+  - sm8150
+  - sm8250
+  - sm8350
+  - sm8450
+  - sm8550
+  - sc8180x
+  - sc8280xp
+maintainer: ""
+schema_version: "1"

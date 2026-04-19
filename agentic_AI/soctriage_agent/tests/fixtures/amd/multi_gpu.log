@@ -1,0 +1,4 @@
+[  456.789012] [drm] amdgpu: ring gfx_0 timeout, signaled seq=100, emitted seq=105
+[  456.789013] [drm] amdgpu: GPU recovery triggered on PCI bus 0000:03:00.0
+[  456.789014] [drm] amdgpu: ring gfx_0 timeout, signaled seq=200, emitted seq=207
+[  456.789015] [drm] amdgpu: GPU recovery triggered on PCI bus 0000:05:00.0

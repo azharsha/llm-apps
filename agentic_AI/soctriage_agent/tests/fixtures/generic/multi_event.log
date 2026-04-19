@@ -1,0 +1,9 @@
+[  100.000000] BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+[  100.000001] IP: bad_function+0x10/0x20
+[  100.000002] Kernel panic - not syncing: Fatal exception
+[  100.000003] ---[ end Kernel panic - not syncing: Fatal exception ]---
+
+[  200.000000] BUG: unable to handle kernel paging request at ffff0000deadbeef
+[  200.000001] IP: another_bad_function+0x20/0x40
+[  200.000002] Kernel panic - not syncing: Fatal exception in interrupt
+[  200.000003] ---[ end Kernel panic - not syncing: Fatal exception in interrupt ]---

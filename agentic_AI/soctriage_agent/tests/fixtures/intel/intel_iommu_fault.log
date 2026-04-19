@@ -1,0 +1,4 @@
+[    3.456789] DMAR: DRHD: handling fault status reg 3
+[    3.456790] DMAR: [DMA Read Request] Request device [00:02.0] fault addr 0xbad00000
+[    3.456791] intel_iommu: DMAR fault: PCI requester ID 0x0010
+[    3.456792] DMAR: DRHD base: 0xfed91000 flags: 0x0

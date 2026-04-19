@@ -1,0 +1,3 @@
+[  345.678901] amdgpu 0000:03:00.0: amdgpu: IH ring buffer overflow detected
+[  345.678902] amdgpu 0000:03:00.0: amdgpu: IH: Lost interrupts, rptr=0x1000 wptr=0x1000
+[  345.678903] amdgpu 0000:03:00.0: amdgpu: IH ring 0 overflow

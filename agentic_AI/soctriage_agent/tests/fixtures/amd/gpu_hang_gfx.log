@@ -1,0 +1,4 @@
+Linux version 6.8.0-amd64 (gcc version 13.2.0)
+[  345.678901] [drm] amdgpu: ring gfx_0 timeout, signaled seq=12345, emitted seq=12350
+[  345.678902] [drm] amdgpu: GPU recovery triggered on PCI bus 0000:03:00.0
+[  345.678903] [drm] amdgpu: Starting ASIC reset for 0000:03:00.0

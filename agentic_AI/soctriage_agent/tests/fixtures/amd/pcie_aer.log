@@ -1,0 +1,3 @@
+[  890.123456] pcieport 0000:00:01.0: AER: Corrected error received: 0000:03:00.0
+[  890.123457] amdgpu 0000:03:00.0: AER: PCIe Bus Error: severity=Corrected, type=Data Link Layer
+[  890.123458] amdgpu 0000:03:00.0: AER: Replay Num Rollover detected

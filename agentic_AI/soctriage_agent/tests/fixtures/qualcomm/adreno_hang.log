@@ -1,0 +1,4 @@
+[  156.789012] kgsl: adreno_hang_detect: GPU hang detected on device msm_kgsl
+[  156.789013] kgsl: adreno_hang_detect: MSM device: msm8998
+[  156.789014] kgsl-3d0 5000000.qcom,kgsl-3d0: GPU HANG: triggered fault
+[  156.789015] kgsl: GPU recovery started

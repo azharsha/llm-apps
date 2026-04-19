@@ -1,0 +1,4 @@
+[   42.123456] i915 0000:00:02.0: GPU HANG: ecode 12:0:00000000, hang on rcs0
+[   42.123457] i915 0000:00:02.0: GPU HANG: submitting -EIO to requests
+[   42.123458] i915 0000:00:02.0: drm/i915: render ring hung
+[   42.123459] i915 0000:00:02.0: GuC submission: ring timeout detected

@@ -1,0 +1,3 @@
+[   88.001234] xe 0000:03:00.0: LMEM fault detected at address 0xdeadbeef00000000
+[   88.001235] xe 0000:03:00.0: Xe HP LMEM access error: page not present
+[   88.001236] xe 0000:03:00.0: [drm] LMEM region 0 fault, recovering
