@@ -1,0 +1,48 @@
+version: 1
+category: bluetooth
+description: "Bluetooth subsystem signals"
+author: SoCTriage
+priority_base: 95
+
+rules:
+
+  - token_type: bt_fw_crash
+    priority: 120
+    match_mode: any
+    patterns:
+      - "hci0: command tx timeout"
+      - "btusb: firmware download failed"
+      - "bluetooth firmware crash"
+    arch: any
+    providers: any
+
+  - token_type: bt_hci_error
+    priority: 110
+    match_mode: any
+    patterns:
+      - "hci_error:"
+      - "Bluetooth: hci_error"
+      - "hci: transport error"
+    arch: any
+    providers: any
+
+  - token_type: bt_connect_fail
+    priority: 105
+    match_mode: any
+    patterns:
+      - "Bluetooth: connection failed"
+      - "bt: l2cap connection timeout"
+      - "hci: connect timeout"
+    arch: any
+    providers: any
+
+  - token_type: bt_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "Bluetooth:"
+      - "hci0:"
+      - "btusb:"
+      - "bt_coex:"
+    arch: any
+    providers: any

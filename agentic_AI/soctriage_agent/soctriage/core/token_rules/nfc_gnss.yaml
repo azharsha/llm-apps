@@ -1,0 +1,37 @@
+version: 1
+category: nfc_gnss
+description: "NFC, GNSS, and UWB subsystem signals"
+author: SoCTriage
+priority_base: 88
+
+rules:
+
+  - token_type: nfc_event
+    priority: 100
+    match_mode: any
+    patterns:
+      - "nfc:"
+      - "NFC:"
+      - "nfc_digital"
+    arch: any
+    providers: any
+
+  - token_type: gnss_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "gnss:"
+      - "GNSS:"
+      - "gnss_serial"
+    arch: any
+    providers: any
+
+  - token_type: uwb_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "uwb:"
+      - "UWB:"
+      - "uwb_rc"
+    arch: any
+    providers: any

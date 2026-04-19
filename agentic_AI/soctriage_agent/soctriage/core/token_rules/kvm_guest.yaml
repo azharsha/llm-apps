@@ -1,0 +1,39 @@
+version: 1
+category: kvm_guest
+description: "KVM hypervisor guest/host signals"
+author: SoCTriage
+priority_base: 93
+
+rules:
+
+  - token_type: kvm_mmu_fail
+    priority: 118
+    match_mode: any
+    patterns:
+      - "kvm: mmu page fault unhandled"
+      - "kvm: MMIO emulation failed"
+      - "kvm_mmu: error"
+    arch: any
+    providers: any
+
+  - token_type: kvm_vcpu_fail
+    priority: 112
+    match_mode: any
+    patterns:
+      - "kvm: VCPU run failed"
+      - "kvm: inject_pending_event error"
+      - "kvm_vcpu: error"
+    arch: any
+    providers: any
+
+  - token_type: kvm_event
+    priority: 93
+    match_mode: any
+    patterns:
+      - "kvm:"
+      - "kvm_mmu:"
+      - "kvm_vcpu:"
+      - "virtio_net:"
+      - "virtio_blk:"
+    arch: any
+    providers: any

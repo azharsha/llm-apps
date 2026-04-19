@@ -1,0 +1,57 @@
+version: 1
+category: qcom_pd
+description: "Qualcomm Protection Domain and peripheral subsystem crash signals"
+author: SoCTriage
+priority_base: 98
+
+rules:
+
+  - token_type: qcom_pd_crash
+    priority: 130
+    match_mode: any
+    patterns:
+      - "pd_mapper: remote pd crash"
+      - "protection domain: crash"
+      - "qcom_pd: fatal error"
+    arch: any
+    providers: [qualcomm]
+
+  - token_type: qcom_adsp_crash
+    priority: 125
+    match_mode: any
+    patterns:
+      - "adsp: subsystem crash"
+      - "adsp-loader: fatal"
+      - "audio_pd: crashed"
+    arch: any
+    providers: [qualcomm]
+
+  - token_type: qcom_cdsp_crash
+    priority: 125
+    match_mode: any
+    patterns:
+      - "cdsp: subsystem crash"
+      - "cdsp-loader: fatal"
+      - "compute_pd: crashed"
+    arch: any
+    providers: [qualcomm]
+
+  - token_type: qcom_slpi_crash
+    priority: 120
+    match_mode: any
+    patterns:
+      - "slpi: subsystem crash"
+      - "sensor_pd: crashed"
+      - "slpi-loader: fatal"
+    arch: any
+    providers: [qualcomm]
+
+  - token_type: qcom_pd_event
+    priority: 98
+    match_mode: any
+    patterns:
+      - "pd_mapper:"
+      - "protection domain"
+      - "qcom_pd:"
+    arch: any
+    providers: [qualcomm]

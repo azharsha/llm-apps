@@ -1,0 +1,28 @@
+version: 1
+category: pm_domains
+description: "Power domain (genpd) signals"
+author: SoCTriage
+priority_base: 84
+
+rules:
+
+  - token_type: pm_domain_fail
+    priority: 108
+    match_mode: any
+    patterns:
+      - "genpd: power on failed"
+      - "pm_domain: attach failed"
+      - "generic_pm_domain: error"
+    arch: any
+    providers: any
+
+  - token_type: pm_domain_event
+    priority: 84
+    match_mode: any
+    patterns:
+      - "genpd:"
+      - "pm_domain:"
+      - "generic_pm_domain:"
+      - "pd_provider:"
+    arch: any
+    providers: any

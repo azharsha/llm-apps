@@ -1,0 +1,38 @@
+version: 1
+category: mediatek_platform
+description: "MediaTek SoC platform signals"
+author: SoCTriage
+priority_base: 90
+
+rules:
+
+  - token_type: mtk_scp_fail
+    priority: 118
+    match_mode: any
+    patterns:
+      - "mtk-scp: firmware load failed"
+      - "scp: ipi timeout"
+      - "mtk_scp: error"
+    arch: any
+    providers: [mediatek]
+
+  - token_type: mtk_mmsys_fail
+    priority: 108
+    match_mode: any
+    patterns:
+      - "mediatek-mmsys: power on failed"
+      - "mtk_mmsys: error"
+      - "mmsys: clock enable failed"
+    arch: any
+    providers: [mediatek]
+
+  - token_type: mtk_platform_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "mtk-scp:"
+      - "mediatek-mmsys:"
+      - "mtk_thermal:"
+      - "mediatek_cpufreq:"
+    arch: any
+    providers: [mediatek]

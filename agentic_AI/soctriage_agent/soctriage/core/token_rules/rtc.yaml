@@ -1,0 +1,27 @@
+version: 1
+category: rtc
+description: "Real-time clock signals"
+author: SoCTriage
+priority_base: 76
+
+rules:
+
+  - token_type: rtc_error
+    priority: 100
+    match_mode: any
+    patterns:
+      - "rtc: unable to set time"
+      - "rtc_hctosys: unable to open rtc"
+      - "rtc: alarm set failed"
+    arch: any
+    providers: any
+
+  - token_type: rtc_event
+    priority: 76
+    match_mode: any
+    patterns:
+      - "rtc:"
+      - "rtc_hctosys:"
+      - "rtc0:"
+    arch: any
+    providers: any

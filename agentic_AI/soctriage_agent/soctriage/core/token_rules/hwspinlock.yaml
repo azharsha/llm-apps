@@ -1,0 +1,27 @@
+version: 1
+category: hwspinlock
+description: "Hardware spinlock signals"
+author: SoCTriage
+priority_base: 73
+
+rules:
+
+  - token_type: hwspinlock_error
+    priority: 98
+    match_mode: any
+    patterns:
+      - "hwspinlock: timeout"
+      - "hwspinlock: failed to lock"
+      - "qcom-hwspinlock: error"
+    arch: any
+    providers: any
+
+  - token_type: hwspinlock_event
+    priority: 73
+    match_mode: any
+    patterns:
+      - "hwspinlock:"
+      - "qcom-hwspinlock:"
+      - "omap_hwspinlock:"
+    arch: any
+    providers: any

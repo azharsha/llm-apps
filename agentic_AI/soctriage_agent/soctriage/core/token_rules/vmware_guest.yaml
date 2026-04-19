@@ -1,0 +1,38 @@
+version: 1
+category: vmware_guest
+description: "VMware guest driver signals"
+author: SoCTriage
+priority_base: 88
+
+rules:
+
+  - token_type: vmware_tools_fail
+    priority: 108
+    match_mode: any
+    patterns:
+      - "vmw_vmci: failed"
+      - "vmware_balloon: error"
+      - "vmxnet3: reset failed"
+    arch: x86_64
+    providers: any
+
+  - token_type: vmware_pvscsi_fail
+    priority: 110
+    match_mode: any
+    patterns:
+      - "pvscsi: reset bus"
+      - "pvscsi: abort command timeout"
+      - "vmw_pvscsi: error"
+    arch: x86_64
+    providers: any
+
+  - token_type: vmware_event
+    priority: 88
+    match_mode: any
+    patterns:
+      - "vmw_vmci:"
+      - "vmxnet3:"
+      - "vmware_balloon:"
+      - "pvscsi:"
+    arch: x86_64
+    providers: any

@@ -1,0 +1,38 @@
+version: 1
+category: nvidia_platform
+description: "NVIDIA Tegra/Jetson SoC platform signals"
+author: SoCTriage
+priority_base: 88
+
+rules:
+
+  - token_type: tegra_hsp_fail
+    priority: 110
+    match_mode: any
+    patterns:
+      - "tegra-hsp: doorbell timeout"
+      - "nvidia,tegra-hsp: error"
+      - "tegra_hsp: failed"
+    arch: arm64
+    providers: [nvidia]
+
+  - token_type: tegra_mc_fail
+    priority: 118
+    match_mode: any
+    patterns:
+      - "tegra-mc: fault"
+      - "tegra_mc: memory error"
+      - "mc: address violation"
+    arch: arm64
+    providers: [nvidia]
+
+  - token_type: nvidia_platform_event
+    priority: 88
+    match_mode: any
+    patterns:
+      - "tegra-hsp:"
+      - "tegra-mc:"
+      - "tegra_clk:"
+      - "tegra-bpmp:"
+    arch: arm64
+    providers: [nvidia]

@@ -1,0 +1,28 @@
+version: 1
+category: mipi_physical
+description: "MIPI C-PHY/D-PHY physical layer signals"
+author: SoCTriage
+priority_base: 83
+
+rules:
+
+  - token_type: mipi_phy_fail
+    priority: 108
+    match_mode: any
+    patterns:
+      - "mipi-cphy: PLL failed"
+      - "dphy: calibration error"
+      - "csi2_phy: init failed"
+    arch: any
+    providers: any
+
+  - token_type: mipi_phy_event
+    priority: 83
+    match_mode: any
+    patterns:
+      - "mipi-cphy:"
+      - "dphy:"
+      - "csi2_phy:"
+      - "mipi-dphy:"
+    arch: any
+    providers: any

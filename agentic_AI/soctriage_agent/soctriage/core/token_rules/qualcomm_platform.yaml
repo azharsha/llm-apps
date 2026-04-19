@@ -1,0 +1,48 @@
+version: 1
+category: qualcomm_platform
+description: "Qualcomm SoC platform signals"
+author: SoCTriage
+priority_base: 95
+
+rules:
+
+  - token_type: qcom_subsys_crash
+    priority: 125
+    match_mode: any
+    patterns:
+      - "subsys: modem crashed"
+      - "qcom-pil: error"
+      - "subsystem restart: fatal"
+    arch: any
+    providers: [qualcomm]
+
+  - token_type: qcom_smem_fail
+    priority: 110
+    match_mode: any
+    patterns:
+      - "qcom-smem: alloc failed"
+      - "smem: partition not found"
+      - "qcom_smem: error"
+    arch: any
+    providers: [qualcomm]
+
+  - token_type: qcom_smd_fail
+    priority: 105
+    match_mode: any
+    patterns:
+      - "qcom-smd: open failed"
+      - "smd: channel not ready"
+      - "qcom_smd: error"
+    arch: any
+    providers: [qualcomm]
+
+  - token_type: qcom_platform_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "qcom-smem:"
+      - "qcom-smd:"
+      - "qcom-pil:"
+      - "msm_bus:"
+    arch: any
+    providers: [qualcomm]

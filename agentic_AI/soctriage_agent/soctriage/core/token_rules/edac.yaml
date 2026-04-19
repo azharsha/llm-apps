@@ -1,0 +1,37 @@
+version: 1
+category: edac
+description: "EDAC memory error detection signals"
+author: SoCTriage
+priority_base: 95
+
+rules:
+
+  - token_type: edac_ue
+    priority: 128
+    match_mode: any
+    patterns:
+      - "EDAC MC: uncorrected error"
+      - "edac: UE detected"
+      - "EDAC: CE threshold exceeded"
+    arch: any
+    providers: any
+
+  - token_type: edac_ce
+    priority: 112
+    match_mode: any
+    patterns:
+      - "EDAC MC: corrected error"
+      - "edac: CE detected"
+      - "edac: single-bit error"
+    arch: any
+    providers: any
+
+  - token_type: edac_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "EDAC MC:"
+      - "EDAC PCI:"
+      - "edac_mc:"
+    arch: any
+    providers: any

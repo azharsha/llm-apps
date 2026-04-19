@@ -1,0 +1,38 @@
+version: 1
+category: intel_platform
+description: "Intel platform and PCH signals"
+author: SoCTriage
+priority_base: 92
+
+rules:
+
+  - token_type: intel_me_fail
+    priority: 115
+    match_mode: any
+    patterns:
+      - "mei_me: hw reset failed"
+      - "intel_me: communication error"
+      - "mei: firmware timeout"
+    arch: x86_64
+    providers: [intel]
+
+  - token_type: intel_punit_fail
+    priority: 110
+    match_mode: any
+    patterns:
+      - "intel_punit: error"
+      - "punit: thermal trip"
+      - "intel: package thermal error"
+    arch: x86_64
+    providers: [intel]
+
+  - token_type: intel_platform_event
+    priority: 92
+    match_mode: any
+    patterns:
+      - "mei_me:"
+      - "intel_punit:"
+      - "intel_scu:"
+      - "pch_thermal:"
+    arch: x86_64
+    providers: [intel]

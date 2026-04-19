@@ -1,0 +1,28 @@
+version: 1
+category: tty_uart
+description: "TTY and UART serial signals"
+author: SoCTriage
+priority_base: 77
+
+rules:
+
+  - token_type: uart_error
+    priority: 102
+    match_mode: any
+    patterns:
+      - "serial: too much work for irq"
+      - "uart: overrun error"
+      - "tty_ldisc: failed to push"
+    arch: any
+    providers: any
+
+  - token_type: tty_event
+    priority: 77
+    match_mode: any
+    patterns:
+      - "serial:"
+      - "uart:"
+      - "tty_ldisc:"
+      - "8250:"
+    arch: any
+    providers: any

@@ -1,0 +1,37 @@
+version: 1
+category: drm_bridge
+description: "DRM bridge and connector signals"
+author: SoCTriage
+priority_base: 90
+
+rules:
+
+  - token_type: drm_bridge_fail
+    priority: 105
+    match_mode: any
+    patterns:
+      - "drm_bridge: attach failed"
+      - "bridge: failed to enable"
+      - "drm: bridge init failed"
+    arch: any
+    providers: any
+
+  - token_type: drm_connector_fail
+    priority: 100
+    match_mode: any
+    patterns:
+      - "drm: connector probe failed"
+      - "connector: no display detected"
+      - "drm_connector: status error"
+    arch: any
+    providers: any
+
+  - token_type: drm_bridge_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "drm_bridge:"
+      - "bridge:"
+      - "drm: bridge"
+    arch: any
+    providers: any

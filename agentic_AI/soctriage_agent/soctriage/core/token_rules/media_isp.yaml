@@ -1,0 +1,38 @@
+version: 1
+category: media_isp
+description: "ISP, camera sensor, and V4L2 pipeline signals"
+author: SoCTriage
+priority_base: 86
+
+rules:
+
+  - token_type: isp_crash
+    priority: 112
+    match_mode: any
+    patterns:
+      - "isp: fatal error"
+      - "cam_isp: hw hang"
+      - "isp_hw: timeout"
+    arch: any
+    providers: any
+
+  - token_type: camera_fail
+    priority: 105
+    match_mode: any
+    patterns:
+      - "camera: sensor probe failed"
+      - "v4l2: streamon failed"
+      - "cam_sensor: power up failed"
+    arch: any
+    providers: any
+
+  - token_type: isp_event
+    priority: 86
+    match_mode: any
+    patterns:
+      - "cam_isp:"
+      - "cam_sensor:"
+      - "isp_hw:"
+      - "v4l2-async:"
+    arch: any
+    providers: any

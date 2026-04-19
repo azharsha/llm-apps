@@ -1,0 +1,38 @@
+version: 1
+category: amd_platform
+description: "AMD platform, SMU, and power management signals"
+author: SoCTriage
+priority_base: 91
+
+rules:
+
+  - token_type: amd_smu_fail
+    priority: 118
+    match_mode: any
+    patterns:
+      - "amd-smu: smu init failed"
+      - "smu: command failed"
+      - "amdgpu smu: timeout"
+    arch: x86_64
+    providers: [amd]
+
+  - token_type: amd_psp_fail
+    priority: 112
+    match_mode: any
+    patterns:
+      - "amd-psp: command timeout"
+      - "psp: mailbox timeout"
+      - "amd psp: firmware error"
+    arch: x86_64
+    providers: [amd]
+
+  - token_type: amd_platform_event
+    priority: 91
+    match_mode: any
+    patterns:
+      - "amd-smu:"
+      - "amd-psp:"
+      - "amd_nb:"
+      - "k10temp:"
+    arch: x86_64
+    providers: [amd]

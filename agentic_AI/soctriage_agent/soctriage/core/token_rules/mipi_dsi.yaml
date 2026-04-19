@@ -1,0 +1,38 @@
+version: 1
+category: mipi_dsi
+description: "MIPI DSI display panel signals"
+author: SoCTriage
+priority_base: 88
+
+rules:
+
+  - token_type: dsi_panel_fail
+    priority: 110
+    match_mode: any
+    patterns:
+      - "mipi-dsi: panel init failed"
+      - "dsi: failed to enable panel"
+      - "dsi_panel: power on failed"
+    arch: any
+    providers: any
+
+  - token_type: dsi_phy_fail
+    priority: 105
+    match_mode: any
+    patterns:
+      - "dsi-phy: PLL lock failed"
+      - "mipi_dsi: PHY init error"
+      - "dsi: phy enable failed"
+    arch: any
+    providers: any
+
+  - token_type: dsi_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "mipi-dsi:"
+      - "mipi_dsi:"
+      - "dsi_panel:"
+      - "dsi-phy:"
+    arch: any
+    providers: any

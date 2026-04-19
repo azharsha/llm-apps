@@ -1,0 +1,47 @@
+version: 1
+category: amd_psp
+description: "AMD Platform Security Processor deep signals"
+author: SoCTriage
+priority_base: 96
+
+rules:
+
+  - token_type: psp_fw_load_fail
+    priority: 128
+    match_mode: any
+    patterns:
+      - "amd-psp: failed to load firmware"
+      - "psp: fw load failed"
+      - "amd_psp: firmware download error"
+    arch: x86_64
+    providers: [amd]
+
+  - token_type: psp_ring_fail
+    priority: 120
+    match_mode: any
+    patterns:
+      - "psp: ring buffer error"
+      - "amd-psp: command ring timeout"
+      - "psp_ring: overflow"
+    arch: x86_64
+    providers: [amd]
+
+  - token_type: psp_tee_fail
+    priority: 115
+    match_mode: any
+    patterns:
+      - "psp: TEE init failed"
+      - "amd-psp: tee error"
+      - "psp: trusted execution env error"
+    arch: x86_64
+    providers: [amd]
+
+  - token_type: psp_event
+    priority: 96
+    match_mode: any
+    patterns:
+      - "amd-psp:"
+      - "psp:"
+      - "amd_psp:"
+    arch: x86_64
+    providers: [amd]

@@ -1,0 +1,28 @@
+version: 1
+category: icc
+description: "Interconnect (ICC) bandwidth vote signals"
+author: SoCTriage
+priority_base: 85
+
+rules:
+
+  - token_type: icc_set_fail
+    priority: 108
+    match_mode: any
+    patterns:
+      - "icc: set failed"
+      - "interconnect: bandwidth request failed"
+      - "icc_provider: error"
+    arch: any
+    providers: any
+
+  - token_type: icc_event
+    priority: 85
+    match_mode: any
+    patterns:
+      - "icc:"
+      - "icc_provider:"
+      - "qcom-icc:"
+      - "interconnect:"
+    arch: any
+    providers: any

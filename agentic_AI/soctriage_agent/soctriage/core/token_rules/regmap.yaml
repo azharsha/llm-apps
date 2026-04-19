@@ -1,0 +1,28 @@
+version: 1
+category: regmap
+description: "Regmap register access error signals"
+author: SoCTriage
+priority_base: 74
+
+rules:
+
+  - token_type: regmap_error
+    priority: 100
+    match_mode: any
+    patterns:
+      - "regmap: error"
+      - "regmap-i2c: IO error"
+      - "regmap-spi: transfer failed"
+    arch: any
+    providers: any
+
+  - token_type: regmap_event
+    priority: 74
+    match_mode: any
+    patterns:
+      - "regmap:"
+      - "regmap-i2c:"
+      - "regmap-spi:"
+      - "regmap-mmio:"
+    arch: any
+    providers: any

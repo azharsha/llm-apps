@@ -1,0 +1,38 @@
+version: 1
+category: hyperv_guest
+description: "Hyper-V guest driver signals"
+author: SoCTriage
+priority_base: 90
+
+rules:
+
+  - token_type: hyperv_crash
+    priority: 125
+    match_mode: any
+    patterns:
+      - "hv_vmbus: failed to connect"
+      - "hyperv: critical error"
+      - "hv_balloon: memory balloon failed"
+    arch: x86_64
+    providers: any
+
+  - token_type: hyperv_netvsc_fail
+    priority: 108
+    match_mode: any
+    patterns:
+      - "hv_netvsc: send buffer init failed"
+      - "netvsc: rndis filter error"
+      - "hv_netvsc: failed"
+    arch: x86_64
+    providers: any
+
+  - token_type: hyperv_event
+    priority: 90
+    match_mode: any
+    patterns:
+      - "hv_vmbus:"
+      - "hv_netvsc:"
+      - "hv_storvsc:"
+      - "hv_balloon:"
+    arch: x86_64
+    providers: any

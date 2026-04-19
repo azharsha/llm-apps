@@ -1,0 +1,38 @@
+version: 1
+category: displayport
+description: "DisplayPort and eDP link signals"
+author: SoCTriage
+priority_base: 87
+
+rules:
+
+  - token_type: dp_link_fail
+    priority: 108
+    match_mode: any
+    patterns:
+      - "dp: link training failed"
+      - "displayport: no link"
+      - "dp_aux: transfer failed"
+    arch: any
+    providers: any
+
+  - token_type: dp_hotplug
+    priority: 95
+    match_mode: any
+    patterns:
+      - "dp: hotplug detected"
+      - "displayport: HPD"
+      - "dp: sink connected"
+    arch: any
+    providers: any
+
+  - token_type: dp_event
+    priority: 88
+    match_mode: any
+    patterns:
+      - "displayport:"
+      - "dp_aux:"
+      - "drm_dp:"
+      - "edp:"
+    arch: any
+    providers: any

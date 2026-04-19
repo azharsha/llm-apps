@@ -1,0 +1,61 @@
+version: 1
+category: wifi
+description: "Wi-Fi subsystem signals — firmware crash, auth, scan, disconnect"
+author: SoCTriage
+priority_base: 100
+
+rules:
+
+  - token_type: wifi_fw_crash
+    priority: 130
+    match_mode: any
+    patterns:
+      - "ath10k: firmware crashed"
+      - "iwlwifi: firmware error"
+      - "brcmfmac: brcmf_fw_crashed"
+      - "wifi firmware crash"
+    arch: any
+    providers: any
+
+  - token_type: wifi_auth_fail
+    priority: 115
+    match_mode: any
+    patterns:
+      - "wlan: authentication failed"
+      - "ieee80211: auth timeout"
+      - "EAPOL handshake failed"
+    arch: any
+    providers: any
+
+  - token_type: wifi_scan_fail
+    priority: 110
+    match_mode: any
+    patterns:
+      - "cfg80211: scan failed"
+      - "wlan: scan timeout"
+      - "mac80211: scan abort"
+    arch: any
+    providers: any
+
+  - token_type: wifi_disconnect
+    priority: 105
+    match_mode: any
+    patterns:
+      - "wlan: disconnected"
+      - "ieee80211: disassociated"
+      - "mac80211: deauthenticated"
+    arch: any
+    providers: any
+
+  - token_type: wifi_event
+    priority: 95
+    match_mode: any
+    patterns:
+      - "ath10k:"
+      - "iwlwifi:"
+      - "brcmfmac:"
+      - "mac80211:"
+      - "cfg80211:"
+      - "wlan:"
+    arch: any
+    providers: any

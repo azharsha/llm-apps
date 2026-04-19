@@ -1,0 +1,28 @@
+version: 1
+category: can
+description: "CAN bus subsystem signals"
+author: SoCTriage
+priority_base: 82
+
+rules:
+
+  - token_type: can_bus_error
+    priority: 108
+    match_mode: any
+    patterns:
+      - "can: bus error"
+      - "can_dev: error frame"
+      - "flexcan: BUS OFF"
+    arch: any
+    providers: any
+
+  - token_type: can_event
+    priority: 82
+    match_mode: any
+    patterns:
+      - "can:"
+      - "flexcan:"
+      - "mcp251x:"
+      - "sja1000:"
+    arch: any
+    providers: any

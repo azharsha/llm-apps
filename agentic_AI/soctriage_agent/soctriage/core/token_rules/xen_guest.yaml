@@ -1,0 +1,39 @@
+version: 1
+category: xen_guest
+description: "Xen hypervisor guest signals"
+author: SoCTriage
+priority_base: 92
+
+rules:
+
+  - token_type: xen_crash
+    priority: 125
+    match_mode: any
+    patterns:
+      - "xen:offline: VCPU panic"
+      - "xen: fatal error"
+      - "xen_bus: crash"
+    arch: any
+    providers: any
+
+  - token_type: xen_grant_fail
+    priority: 108
+    match_mode: any
+    patterns:
+      - "xen-gntdev: grant map failed"
+      - "gnttab: out of grant refs"
+      - "xen: grant table error"
+    arch: any
+    providers: any
+
+  - token_type: xen_event
+    priority: 92
+    match_mode: any
+    patterns:
+      - "xen:"
+      - "xen-bus:"
+      - "xen-gnt"
+      - "xen_blkfront:"
+      - "xen_netfront:"
+    arch: any
+    providers: any

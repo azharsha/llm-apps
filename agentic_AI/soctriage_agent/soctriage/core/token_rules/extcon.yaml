@@ -1,0 +1,27 @@
+version: 1
+category: extcon
+description: "External connector (extcon) signals"
+author: SoCTriage
+priority_base: 75
+
+rules:
+
+  - token_type: extcon_error
+    priority: 98
+    match_mode: any
+    patterns:
+      - "extcon: registration failed"
+      - "extcon_usb_gpio: probe failed"
+      - "extcon: notifier error"
+    arch: any
+    providers: any
+
+  - token_type: extcon_event
+    priority: 75
+    match_mode: any
+    patterns:
+      - "extcon:"
+      - "extcon-usb-gpio:"
+      - "extcon_gpio:"
+    arch: any
+    providers: any

@@ -1,0 +1,28 @@
+version: 1
+category: input_hid
+description: "HID and input device signals"
+author: SoCTriage
+priority_base: 78
+
+rules:
+
+  - token_type: hid_error
+    priority: 100
+    match_mode: any
+    patterns:
+      - "hid-core: failed to claim input"
+      - "hid: probe failed"
+      - "hidraw: error"
+    arch: any
+    providers: any
+
+  - token_type: input_event
+    priority: 78
+    match_mode: any
+    patterns:
+      - "hid-core:"
+      - "input:"
+      - "hidraw:"
+      - "evdev:"
+    arch: any
+    providers: any

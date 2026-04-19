@@ -1,0 +1,37 @@
+version: 1
+category: kasan_detail_ext
+description: "Extended KASAN/KFENCE/KMSAN detail signals"
+author: SoCTriage
+priority_base: 108
+
+rules:
+
+  - token_type: kfence_error
+    priority: 118
+    match_mode: any
+    patterns:
+      - "KFENCE: use-after-free"
+      - "kfence: out-of-bounds"
+      - "BUG: KFENCE"
+    arch: any
+    providers: any
+
+  - token_type: kmsan_error
+    priority: 115
+    match_mode: any
+    patterns:
+      - "BUG: KMSAN: uninit-value"
+      - "KMSAN: kernel-infoleak"
+      - "BUG: KMSAN"
+    arch: any
+    providers: any
+
+  - token_type: kasan_heap_detail
+    priority: 112
+    match_mode: any
+    patterns:
+      - "KASAN: slab-out-of-bounds"
+      - "KASAN: use-after-free"
+      - "KASAN: heap-buffer-overflow"
+    arch: any
+    providers: any

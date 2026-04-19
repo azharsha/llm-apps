@@ -1,0 +1,28 @@
+version: 1
+category: mailbox
+description: "Mailbox IPC channel signals"
+author: SoCTriage
+priority_base: 74
+
+rules:
+
+  - token_type: mailbox_error
+    priority: 100
+    match_mode: any
+    patterns:
+      - "mailbox: channel busy timeout"
+      - "mbox: tx timeout"
+      - "arm_mhu: transfer error"
+    arch: any
+    providers: any
+
+  - token_type: mailbox_event
+    priority: 74
+    match_mode: any
+    patterns:
+      - "mailbox:"
+      - "mbox:"
+      - "arm_mhu:"
+      - "qcom-ipcc:"
+    arch: any
+    providers: any

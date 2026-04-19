@@ -1,0 +1,38 @@
+version: 1
+category: rpi_platform
+description: "Raspberry Pi platform signals"
+author: SoCTriage
+priority_base: 85
+
+rules:
+
+  - token_type: rpi_firmware_fail
+    priority: 110
+    match_mode: any
+    patterns:
+      - "raspberrypi-firmware: property transaction failed"
+      - "bcm2835-firmware: error"
+      - "rpi_firmware: timeout"
+    arch: arm64
+    providers: [broadcom]
+
+  - token_type: rpi_mbox_fail
+    priority: 105
+    match_mode: any
+    patterns:
+      - "bcm2835-mbox: failed"
+      - "rpi_mbox: timeout"
+      - "vc_mailbox: no response"
+    arch: arm64
+    providers: [broadcom]
+
+  - token_type: rpi_platform_event
+    priority: 85
+    match_mode: any
+    patterns:
+      - "raspberrypi-firmware:"
+      - "bcm2835-mbox:"
+      - "bcm2835_clk:"
+      - "bcm2711-dma:"
+    arch: arm64
+    providers: [broadcom]

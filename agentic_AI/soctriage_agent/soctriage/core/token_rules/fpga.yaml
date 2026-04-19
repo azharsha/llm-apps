@@ -1,0 +1,28 @@
+version: 1
+category: fpga
+description: "FPGA manager and bridge signals"
+author: SoCTriage
+priority_base: 82
+
+rules:
+
+  - token_type: fpga_load_fail
+    priority: 108
+    match_mode: any
+    patterns:
+      - "fpga_manager: writing to FPGA failed"
+      - "fpga: image load error"
+      - "fpga_bridge: failed to enable"
+    arch: any
+    providers: any
+
+  - token_type: fpga_event
+    priority: 82
+    match_mode: any
+    patterns:
+      - "fpga_manager:"
+      - "fpga_bridge:"
+      - "fpga_region:"
+      - "fpga:"
+    arch: any
+    providers: any

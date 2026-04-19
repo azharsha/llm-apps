@@ -1,0 +1,28 @@
+version: 1
+category: soundwire
+description: "SoundWire audio bus signals"
+author: SoCTriage
+priority_base: 82
+
+rules:
+
+  - token_type: soundwire_error
+    priority: 106
+    match_mode: any
+    patterns:
+      - "soundwire: sync failed"
+      - "sdw: bus reset"
+      - "intel-sdw: parity error"
+    arch: any
+    providers: any
+
+  - token_type: soundwire_event
+    priority: 82
+    match_mode: any
+    patterns:
+      - "soundwire:"
+      - "sdw:"
+      - "intel-sdw:"
+      - "qcom-sdw:"
+    arch: any
+    providers: any

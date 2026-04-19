@@ -1,0 +1,38 @@
+version: 1
+category: samsung_platform
+description: "Samsung Exynos SoC platform signals"
+author: SoCTriage
+priority_base: 89
+
+rules:
+
+  - token_type: exynos_mif_fail
+    priority: 115
+    match_mode: any
+    patterns:
+      - "exynos-busmon: MIF error"
+      - "exynos: memory interface fault"
+      - "exynos_mif: timeout"
+    arch: arm64
+    providers: [samsung]
+
+  - token_type: exynos_tmu_event
+    priority: 100
+    match_mode: any
+    patterns:
+      - "exynos_tmu: thermal trip"
+      - "exynos-tmu: overheat"
+      - "samsung_tmu: throttling"
+    arch: arm64
+    providers: [samsung]
+
+  - token_type: samsung_platform_event
+    priority: 89
+    match_mode: any
+    patterns:
+      - "exynos-busmon:"
+      - "exynos_tmu:"
+      - "exynos-drm:"
+      - "samsung_iommu:"
+    arch: arm64
+    providers: [samsung]

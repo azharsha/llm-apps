@@ -1,0 +1,37 @@
+version: 1
+category: habanalabs
+description: "Intel Habana Labs AI accelerator signals"
+author: SoCTriage
+priority_base: 88
+
+rules:
+
+  - token_type: habana_crash
+    priority: 122
+    match_mode: any
+    patterns:
+      - "habanalabs: device reset"
+      - "hl_device: fatal error"
+      - "habanalabs: heartbeat failed"
+    arch: x86_64
+    providers: any
+
+  - token_type: habana_fw_fail
+    priority: 112
+    match_mode: any
+    patterns:
+      - "habanalabs: firmware load failed"
+      - "hl_fw: timeout"
+      - "habanalabs: pci error"
+    arch: x86_64
+    providers: any
+
+  - token_type: habana_event
+    priority: 88
+    match_mode: any
+    patterns:
+      - "habanalabs:"
+      - "hl_device:"
+      - "hl_fw:"
+    arch: x86_64
+    providers: any

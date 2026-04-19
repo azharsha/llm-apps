@@ -1,0 +1,28 @@
+version: 1
+category: opp_detail
+description: "OPP table detail and corner voltage signals"
+author: SoCTriage
+priority_base: 83
+
+rules:
+
+  - token_type: opp_corner_fail
+    priority: 105
+    match_mode: any
+    patterns:
+      - "opp: corner voltage set failed"
+      - "cpr: corner not supported"
+      - "opp_table: regulator set failed"
+    arch: any
+    providers: any
+
+  - token_type: opp_detail_event
+    priority: 83
+    match_mode: any
+    patterns:
+      - "opp_table:"
+      - "cpr:"
+      - "cpr3-regulator:"
+      - "qcom-cpufreq-nvmem:"
+    arch: any
+    providers: any

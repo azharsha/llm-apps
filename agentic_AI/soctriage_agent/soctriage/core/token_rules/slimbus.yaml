@@ -1,0 +1,27 @@
+version: 1
+category: slimbus
+description: "SLIMbus audio bus signals"
+author: SoCTriage
+priority_base: 81
+
+rules:
+
+  - token_type: slimbus_error
+    priority: 105
+    match_mode: any
+    patterns:
+      - "slim: enumeration failed"
+      - "slimbus: TX error"
+      - "qcom-slim: bus reset"
+    arch: any
+    providers: any
+
+  - token_type: slimbus_event
+    priority: 81
+    match_mode: any
+    patterns:
+      - "slim:"
+      - "slimbus:"
+      - "qcom-slim:"
+    arch: any
+    providers: any

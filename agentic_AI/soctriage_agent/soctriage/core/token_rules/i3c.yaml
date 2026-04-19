@@ -1,0 +1,27 @@
+version: 1
+category: i3c
+description: "I3C bus subsystem signals"
+author: SoCTriage
+priority_base: 80
+
+rules:
+
+  - token_type: i3c_error
+    priority: 105
+    match_mode: any
+    patterns:
+      - "i3c: transfer error"
+      - "i3c_master: CCC failed"
+      - "i3c: hot-join failed"
+    arch: any
+    providers: any
+
+  - token_type: i3c_event
+    priority: 80
+    match_mode: any
+    patterns:
+      - "i3c:"
+      - "i3c_master:"
+      - "i3c_dev:"
+    arch: any
+    providers: any
