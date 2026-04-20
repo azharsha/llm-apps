@@ -30,7 +30,7 @@ class GenericProvider(SoCProvider):
         seen: set[str] = set()
         results: list[dict[str, Any]] = []
         for token in token_stream:
-            token_type = token.get("token_type", "")
+            token_type = token.get("type", "")
             if token_type not in _IP_MAP:
                 continue
             ip_name, confidence, subsystem = _IP_MAP[token_type]

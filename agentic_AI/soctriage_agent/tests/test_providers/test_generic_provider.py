@@ -18,7 +18,7 @@ def _provider() -> GenericProvider:
 
 
 def _tok(token_type: str) -> dict:
-    return {"token_type": token_type, "raw": "dummy"}
+    return {"type": token_type, "raw": "dummy"}
 
 
 # ---------------------------------------------------------------------------

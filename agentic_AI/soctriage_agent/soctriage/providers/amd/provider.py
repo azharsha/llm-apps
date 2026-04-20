@@ -65,7 +65,7 @@ class AMDProvider(SoCProvider):
         return result
 
     def get_register_maps(self) -> dict[str, dict[int, str]]:
-        return REGISTER_MAPS
+        return {k: dict(v) for k, v in REGISTER_MAPS.items()}
 
     def get_hang_rules(self) -> list[HangRule]:
         return list(HANG_RULES)
