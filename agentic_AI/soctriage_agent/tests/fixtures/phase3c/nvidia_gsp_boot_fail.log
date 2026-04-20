@@ -1,0 +1,3 @@
+[78901.234] nvidia 0000:01:00.0: Xid 79: timeout
+[78901.235] nvidia: GSP_BOOT_STATUS=0x00000002
+[78901.236] nvidia: GSP firmware failed to boot

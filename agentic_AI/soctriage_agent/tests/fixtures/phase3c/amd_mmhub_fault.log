@@ -1,0 +1,3 @@
+[23456.789] amdgpu 0000:03:00.0: amdgpu: MMHUB error
+[23456.790] amdgpu: MMHUB_STATUS=0x00000001
+[23456.791] amdgpu: VM_L2_PROTECTION_FAULT detected

@@ -1,0 +1,3 @@
+[56789.012] qcom_q6v5 4080000.remoteproc: subsystem restart
+[56789.013] ADSP state=SSR reason=wdog_bite
+[56789.014] remoteproc: ADSP crashed

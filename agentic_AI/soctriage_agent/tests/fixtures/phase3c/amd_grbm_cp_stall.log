@@ -1,0 +1,4 @@
+[12345.678] amdgpu 0000:03:00.0: amdgpu: GPU timeout
+[12345.679] amdgpu: GRBM_STATUS=0xA0001020
+[12345.680] amdgpu: CP_STALLED_STAT1=0x00000001
+[12345.681] amdgpu: ring gfx_0 timeout
