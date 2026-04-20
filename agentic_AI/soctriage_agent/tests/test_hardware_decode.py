@@ -224,7 +224,7 @@ def test_decode_pipeline_openlog_to_hardware_context():
     events = decode_hardware([event])
     assert events[0].__dict__.get("hardware_context") is not None
     ctx = events[0].__dict__["hardware_context"]
-    assert ctx.stall_type in {"gpu_hard_stall", "reset_storm", "firmware_boot_fail"}
+    assert ctx.stall_type in {"gpu_hard_stall", "reset_storm"}
 
 
 def test_hardware_context_to_dict_json_serialisable():

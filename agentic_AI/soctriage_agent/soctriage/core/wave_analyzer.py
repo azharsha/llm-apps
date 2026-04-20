@@ -116,22 +116,15 @@ def analyse_waves(ctx: HardwareContext, event: Any) -> HardwareContext:
         # Try exact match first, then prefix match for numbered variants
         ip = _RING_NAME_MAP.get(ring_token)
         if ip is None:
-            for prefix, mapped_ip in _RING_NAME_MAP.items():
-                if ring_token.startswith(prefix.rstrip("0")) and prefix[-1].isdigit() is False:
-                    # Handle gfx_1, gfx_2 etc → GFX
-                    if re.match(r"^" + re.escape(prefix.rstrip("0")), ring_token):
-                        ip = mapped_ip
-                        break
-            if ip is None:
-                # Generalised: gfx_N → GFX, sdmaN → SDMA, bcsN → BLT, vcsN → VIDEO
-                if ring_token.startswith("gfx_"):
-                    ip = "GFX"
-                elif ring_token.startswith("sdma"):
-                    ip = "SDMA"
-                elif ring_token.startswith("bcs"):
-                    ip = "BLT"
-                elif ring_token.startswith("vcs"):
-                    ip = "VIDEO"
+            # Generalised: gfx_N → GFX, sdmaN → SDMA, bcsN → BLT, vcsN → VIDEO
+            if ring_token.startswith("gfx_"):
+                ip = "GFX"
+            elif ring_token.startswith("sdma"):
+                ip = "SDMA"
+            elif ring_token.startswith("bcs"):
+                ip = "BLT"
+            elif ring_token.startswith("vcs"):
+                ip = "VIDEO"
         if ip:
             sigs["suspect_ip"] = ip
 

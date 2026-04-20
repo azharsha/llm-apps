@@ -21,12 +21,11 @@ __all__ = ["parse_registers", "REGISTER_RE"]
 # ── Master register regex ─────────────────────────────────────────────────────
 
 # Matches: NAME=0xHEX  NAME: 0xHEX  NAME = HEX  NAME[0]=0xHEX
-# Case-insensitive so "0x" and "0X" both match; name is uppercased after.
-# The hex group is terminated by a word boundary (not followed by more letters)
-# to avoid mistaking log prefixes like "amdgpu: CP_..." as registers.
+# Name group is uppercase-only per spec — prevents matching lowercase log metadata
+# fields like seq=442, signaled=0, emitted=1 that appear in ring timeout lines.
+# Hex digits cover both cases explicitly; no re.IGNORECASE needed.
 REGISTER_RE = re.compile(
-    r"(?P<name>[A-Za-z][A-Za-z0-9_\[\]\.]+)\s*(?:=|:)\s*(?:0x)?(?P<hex>[0-9A-Fa-f]{1,16})(?![0-9A-Za-z_])",
-    re.IGNORECASE,
+    r"(?P<name>[A-Z][A-Z0-9_\[\]\.]+)\s*(?:=|:)\s*(?:0x)?(?P<hex>[0-9A-Fa-f]{1,16})(?![0-9A-Za-z_])",
 )
 
 # ── Firmware / state token patterns ──────────────────────────────────────────

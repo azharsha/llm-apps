@@ -85,8 +85,8 @@ def test_parse_bare_hex_without_0x_prefix():
 
 
 def test_register_names_uppercased():
-    """Register names are normalised to uppercase."""
-    event = _make_event("grbm_status=0x00000001")
+    """Register names matched in uppercase — kernel logs always use uppercase names."""
+    event = _make_event("GRBM_STATUS=0x00000001")
     ctx = parse_registers(event)
     assert ctx is not None
     assert any(r.name == "GRBM_STATUS" for r in ctx.registers)

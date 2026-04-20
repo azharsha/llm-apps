@@ -47,6 +47,7 @@ def _compute_stall_type(ctx: HardwareContext, event: Any) -> str:
         sigs.get("memory_translation_fault")
         or sigs.get("mmhub_fault")
         or sigs.get("gtt_fault")
+        or sigs.get("bar2_fault")
     ):
         return "memory_translation_fault"
 
@@ -59,7 +60,7 @@ def _compute_stall_type(ctx: HardwareContext, event: Any) -> str:
     if sigs.get("engine_stalled") or sigs.get("no_forward_progress"):
         return "gpu_hard_stall"
 
-    if sigs.get("rpmh_timeout"):
+    if sigs.get("rpmh_timeout") or sigs.get("spmi_fault"):
         return "power_gating_fault"
 
     return "unknown_hardware_fault"
