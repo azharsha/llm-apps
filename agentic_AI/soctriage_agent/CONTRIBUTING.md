@@ -1,5 +1,26 @@
 # Contributing to SoCTriage
 
+## Architecture Overview
+
+SoCTriage is an 8-phase pipeline for Linux kernel / SoC crash log analysis:
+
+```
+Phase 1  open_log()          → lines (streaming, compressed)
+Phase 2  tokenize()          → LogToken list (84 YAML rule files, 280+ types)
+Phase 3  assemble()          → LogEvent list (groups related tokens)
+Phase 3  classify_all()      → LogEvent list (subsystem + severity)
+Phase 3c decode_hardware()   → LogEvent list (register decode attached)
+Phase 4  analyse()           → CascadeResult (root cause, causal chain)
+Phase 6  run_agent()         → AgentResult (LLM narrative, fix suggestions)
+Phase 7  report()            → JSON / Markdown / HTML string
+```
+
+Each phase is a separate module under `soctriage/core/`. Providers live under
+`soctriage/providers/<vendor>/provider.py`. See [docs/architecture.md](docs/architecture.md)
+for the full module tree and data flow.
+
+---
+
 ## Adding a New Token Type via YAML
 
 SoCTriage uses YAML rule files that map 1:1 to Linux kernel subsystem directories.
@@ -101,6 +122,18 @@ soctriage --input crash.log \
 
 ---
 
+## Adding a New SoC Provider
+
+See [docs/provider_guide.md](docs/provider_guide.md) for the full step-by-step guide.
+
+Quick summary:
+1. Create `soctriage/providers/<vendor>/provider.py` implementing `SoCProvider`
+2. Auto-discovery picks it up — no registration needed
+3. Add YAML rules under `core/token_rules/<vendor>.yaml`
+4. Add tests under `tests/test_providers/`
+
+---
+
 ## Priority Guide
 
 | Range | Use For |
@@ -136,11 +169,47 @@ soctriage --input crash.log \
 
 ---
 
+## Development Setup
+
+```bash
+# Clone and install in editable mode with all dev deps
+git clone https://github.com/sdmove/soctriage
+cd soctriage
+pip install -e ".[dev,llm]"
+pre-commit install
+
+# Run full test suite
+pytest --tb=short -q
+
+# Run benchmarks
+pytest benchmarks/ --benchmark-only -q
+
+# Type check
+mypy soctriage/
+
+# Lint
+ruff check soctriage/ tests/
+```
+
+Or open in VS Code with the dev container (`Ctrl+Shift+P` → "Reopen in Container").
+
+---
+
 ## PR Checklist
 
 - [ ] Rule added to the correct YAML file (or new YAML created)
 - [ ] `token_type` follows naming conventions (snake_case, no driver-name prefix)
 - [ ] `priority` set in the correct range per the priority guide
 - [ ] Test added in `tests/test_token_rules/test_<subsystem>_rules.py`
-- [ ] `pytest tests/test_token_rules/ -v` passes locally
+- [ ] `pytest tests/ -q` passes locally
+- [ ] `mypy soctriage/` reports 0 errors
+- [ ] `ruff check soctriage/ tests/` reports 0 violations
 - [ ] PR title follows `yaml: add <token_type> to <yaml_file>` format
+
+## Release Checklist (maintainers)
+
+- [ ] Update `version` in `pyproject.toml`
+- [ ] Update `CHANGELOG.md`
+- [ ] Tag: `git tag v1.x.y && git push --tags`
+- [ ] GitHub Actions release workflow publishes to PyPI automatically
+- [ ] Set `PYPI_TOKEN` and `DOCKER_TOKEN` secrets in GitHub repository settings

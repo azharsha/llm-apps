@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+  soctriage:
+    build: .
+    volumes:
+      - ./logs:/logs:ro
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    profiles: [cloud]
+
+  soctriage-offline:
+    build: .
+    volumes:
+      - ./logs:/logs:ro
+    command: ["--no-llm"]
+    profiles: [offline]
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    profiles: [ollama]
+
+volumes:
+  ollama_data:

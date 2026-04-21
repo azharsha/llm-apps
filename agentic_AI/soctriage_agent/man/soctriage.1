@@ -1,0 +1,155 @@
+.TH SOCTRIAGE 1 "2026-04-21" "soctriage 1.0.0" "User Commands"
+.SH NAME
+soctriage \- AI-powered Linux kernel / SoC crash diagnostic tool
+.SH SYNOPSIS
+.B soctriage
+[\fIOPTIONS\fR]
+.I LOG_FILE
+.br
+.B soctriage
+[\fIOPTIONS\fR]
+.B \-\-input
+.I PATH
+.br
+.B soctriage
+[\fIOPTIONS\fR]
+.B \-
+.SH DESCRIPTION
+.B soctriage
+analyses Linux kernel crash logs and SoC diagnostic dumps to identify the root
+cause of hardware failures, classify subsystem events, and generate structured
+reports. An optional Anthropic Claude or Ollama LLM backend produces human-readable
+root-cause narratives and fix suggestions.
+.PP
+The pipeline: open_log \(-> tokenize \(-> assemble \(-> classify \(-> hardware_decode
+\(-> cascade_analyse \(-> run_agent \(-> report.
+.SH OPTIONS
+.SS Input / Output
+.TP
+.B LOG_FILE
+Kernel log file (.log, .gz, .bz2, .xz) or \fB\-\fR for stdin.
+.TP
+.BI \-\-input " PATH"
+Input log file path, or \fB\-\fR for stdin (alias for positional argument).
+.TP
+.BI \-\-output " PATH"
+Output report base path. Extension added per \fB\-\-format\fR.
+.TP
+.BI \-\-format " {json,markdown,html}"
+Output format (default: json).
+.TP
+.B \-\-include\-raw
+Include raw event text in JSON output.
+.SS LLM Control
+.TP
+.B \-\-no\-llm
+Skip LLM agent. Run Phase 4 cascade analysis only.
+.TP
+.BI \-\-llm\-backend " {anthropic,ollama}"
+LLM backend (default: anthropic).
+.TP
+.BI \-\-llm\-model " MODEL"
+LLM model name (default: claude-sonnet-4-5).
+.TP
+.BI \-\-ollama\-host " URL"
+Ollama API host (default: http://localhost:11434).
+.TP
+.BI \-\-timeout " SECS"
+LLM call timeout in seconds (default: 60).
+.SS SoC / Hardware
+.TP
+.BI \-\-asic\-gen " GEN"
+Override ASIC/chip generation detection.
+.TP
+.BI \-\-soc\-provider " NAME"
+Force specific SoC provider by name.
+.TP
+.B \-\-list\-providers
+List all registered providers and exit.
+.SS Extensibility
+.TP
+.BI \-\-token\-rule " TYPE:PATTERN"
+Inject an inline token rule. Repeatable.
+.TP
+.BI \-\-plugin " PATH"
+Load a Python plugin file containing @register_rule rules. Repeatable.
+.SS Utility
+.TP
+.B \-\-verbose
+Enable debug output.
+.TP
+.B \-\-version
+Show soctriage version and exit.
+.SH EXIT STATUS
+.TP
+.B 0
+Success \(em no critical events, or log was clean.
+.TP
+.B 1
+Critical severity event detected in the log.
+.TP
+.B 2
+Runtime error (file not found, parse failure, agent failure).
+.TP
+.B 3
+Usage error (bad arguments).
+.SH EXAMPLES
+.TP
+Analyse a kernel log without LLM:
+.B soctriage /var/log/dmesg \-\-no\-llm
+.TP
+Save HTML report:
+.B soctriage crash.log \-\-no\-llm \-\-format html \-\-output report.html
+.TP
+Full analysis with Anthropic Claude:
+.B ANTHROPIC_API_KEY=sk-ant-... soctriage crash.log
+.TP
+Force AMD provider:
+.B soctriage crash.log \-\-soc\-provider amd \-\-no\-llm
+.TP
+Read from stdin:
+.B dmesg | soctriage \- \-\-no\-llm
+.TP
+Analyse compressed log:
+.B soctriage crash.log.gz \-\-no\-llm
+.TP
+Inject an inline token rule:
+.B soctriage crash.log \-\-token\-rule "cxl_event:CXL 3.0: fatal" \-\-no\-llm
+.TP
+Use Ollama locally:
+.B soctriage crash.log \-\-llm\-backend ollama \-\-llm\-model llama3.2
+.TP
+Save JSON with raw event text:
+.B soctriage crash.log \-\-no\-llm \-\-include\-raw \-\-output report.json
+.TP
+List available SoC providers:
+.B soctriage \-\-list\-providers
+.SH ENVIRONMENT VARIABLES
+.TP
+.B ANTHROPIC_API_KEY
+Required for \fB\-\-llm\-backend anthropic\fR.
+.TP
+.B OLLAMA_HOST
+Override Ollama API host without using \fB\-\-ollama\-host\fR.
+.TP
+.B SOCTRIAGE_RULES_DIR
+Override the bundled YAML token rules directory.
+.TP
+.B SOCTRIAGE_LOG_LEVEL
+Python logging level for soctriage internals (default: WARNING).
+.TP
+.B NO_COLOR
+Disable ANSI colour in terminal output when set.
+.SH FILES
+.TP
+.I ~/.config/soctriage/custom.yaml
+Optional user-level custom token rules (loaded automatically if present).
+.SH SEE ALSO
+.BR dmesg (1),
+.BR journalctl (1),
+.BR python3 (1)
+.SH AUTHORS
+SD Move
+.SH REPORTING BUGS
+.UR https://github.com/sdmove/soctriage/issues
+.UE

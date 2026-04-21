@@ -1,0 +1,30 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.0
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [pyyaml, httpx, anthropic, types-PyYAML]
+        args: [--ignore-missing-imports]
+
+  - repo: local
+    hooks:
+      - id: pytest-smoke
+        name: pytest smoke
+        entry: pytest -m smoke --tb=short -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: [-d, "{extends: relaxed, rules: {line-length: {max: 120}}}"]
+        files: soctriage/core/token_rules/.*\.yaml$

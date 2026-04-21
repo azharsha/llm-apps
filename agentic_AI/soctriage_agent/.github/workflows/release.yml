@@ -1,0 +1,47 @@
+name: Release to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    environment: pypi-production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools
+        run: pip install build twine
+
+      - name: Build wheel + sdist
+        run: python -m build
+
+      - name: Check dist
+        run: twine check dist/*
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+        run: twine upload dist/*
+
+      - name: Build Docker image
+        run: |
+          docker build -t "sdmove/soctriage:${{ github.ref_name }}" .
+          docker build -t "sdmove/soctriage:latest" .
+
+      - name: Push Docker image
+        env:
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+        run: |
+          echo "$DOCKER_TOKEN" | docker login -u sdmove --password-stdin
+          docker push "sdmove/soctriage:${{ github.ref_name }}"
+          docker push "sdmove/soctriage:latest"

@@ -1,0 +1,52 @@
+name: PR Gate
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    name: Test Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -e ".[dev,llm]"
+        env:
+          ANTHROPIC_API_KEY: "mock-key-for-ci"
+
+      - name: Run full test suite
+        run: pytest --tb=short -q --cov=soctriage --cov-report=xml
+        env:
+          ANTHROPIC_API_KEY: "mock-key-for-ci"
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.12'
+        with:
+          file: coverage.xml
+
+      - name: mypy
+        run: mypy soctriage/
+
+      - name: ruff
+        run: ruff check soctriage/ tests/
+
+      - name: pip-audit (security scan)
+        run: pip install pip-audit && pip-audit --desc on || true
+
+      - name: Run benchmarks
+        run: pytest benchmarks/ --benchmark-only --benchmark-json=bench.json -q
+        env:
+          ANTHROPIC_API_KEY: "mock-key-for-ci"
