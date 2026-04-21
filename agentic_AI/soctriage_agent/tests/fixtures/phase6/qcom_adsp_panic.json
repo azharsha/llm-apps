@@ -1,0 +1,46 @@
+{
+  "root_cause": {
+    "event_id": 1,
+    "event_type": "soc_crash",
+    "subsystem": "remoteproc",
+    "severity": "critical",
+    "confidence": 0.90,
+    "start_line": 1,
+    "end_line": 6,
+    "raw_text": "subsys-restart: Initiating subsystem crash of adsp"
+  },
+  "cascade": [
+    {
+      "from": "soc_crash",
+      "to": "kernel_panic",
+      "relation": "causes",
+      "confidence": 0.90,
+      "reasoning": "ADSP crash with SMP2P notify -> kernel panic"
+    }
+  ],
+  "summary": {
+    "chip_gen": "qcom_sm8550",
+    "arch": "arm64",
+    "kernel_ver": "6.1.0",
+    "severity": "critical",
+    "subsystems_hit": ["remoteproc", "cpu"],
+    "event_count": 2,
+    "critical_count": 2,
+    "error_count": 0,
+    "warning_count": 0,
+    "info_count": 0
+  },
+  "ascii_diagram": "[1] soc_crash (remoteproc) --causes(0.90)--> [2] kernel_panic (cpu)",
+  "_mock_llm_responses": [
+    {
+      "content": null,
+      "tool_calls": [{"id": "tc1", "tool_name": "get_root_cause", "arguments": {}}],
+      "stop_reason": "tool_calls"
+    },
+    {
+      "content": "{\"root_cause_narrative\": \"Qualcomm ADSP subsystem crashed on SM8550, causing a kernel panic via SMP2P notification path.\", \"fix_suggestions\": [\"Update ADSP firmware to >= 0.0.1.0\", \"Check remoteproc ramdump for ADSP crash cause\"], \"known_issues_matched\": [], \"confidence\": 0.90, \"subsystem_narrative\": \"Remoteproc: ADSP crash. CPU: kernel panic.\"}",
+      "tool_calls": [],
+      "stop_reason": "stop"
+    }
+  ]
+}

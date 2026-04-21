@@ -1,0 +1,53 @@
+{
+  "root_cause": {
+    "event_id": 1,
+    "event_type": "memory_fault",
+    "subsystem": "memory",
+    "severity": "error",
+    "confidence": 0.82,
+    "start_line": 1,
+    "end_line": 4,
+    "raw_text": "amdgpu: MMHUB page fault (VMC)"
+  },
+  "cascade": [
+    {
+      "from": "memory_fault",
+      "to": "gpu_hang",
+      "relation": "causes",
+      "confidence": 0.80,
+      "reasoning": "VRAM ECC error -> amdgpu ring reset"
+    },
+    {
+      "from": "gpu_hang",
+      "to": "kernel_panic",
+      "relation": "causes",
+      "confidence": 0.75,
+      "reasoning": "GPU hang with no recovery -> kernel panic"
+    }
+  ],
+  "summary": {
+    "chip_gen": "amd_cdna3",
+    "arch": "x86_64",
+    "kernel_ver": "6.5.0",
+    "severity": "critical",
+    "subsystems_hit": ["memory", "gpu", "cpu"],
+    "event_count": 3,
+    "critical_count": 1,
+    "error_count": 2,
+    "warning_count": 0,
+    "info_count": 0
+  },
+  "ascii_diagram": "[1] memory_fault (memory) --causes(0.80)--> [2] gpu_hang (gpu) --causes(0.75)--> [3] kernel_panic (cpu)",
+  "_mock_llm_responses": [
+    {
+      "content": null,
+      "tool_calls": [{"id": "tc1", "tool_name": "get_root_cause", "arguments": {}}],
+      "stop_reason": "tool_calls"
+    },
+    {
+      "content": "{\"root_cause_narrative\": \"AMD MI300 MMHUB page fault triggered a cascade from memory fault to GPU hang to kernel panic.\", \"fix_suggestions\": [\"Apply upstream amdgpu MMHUB page fault fix\", \"Enable ECC scrubbing via amdgpu.ras_enable=1\"], \"known_issues_matched\": [], \"confidence\": 0.80, \"subsystem_narrative\": \"Memory: MMHUB fault. GPU: ring reset. CPU: kernel panic.\"}",
+      "tool_calls": [],
+      "stop_reason": "stop"
+    }
+  ]
+}

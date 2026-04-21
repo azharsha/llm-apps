@@ -1,0 +1,24 @@
+{
+  "root_cause": null,
+  "cascade": [],
+  "summary": {
+    "chip_gen": "unknown",
+    "arch": "unknown",
+    "kernel_ver": null,
+    "severity": "info",
+    "subsystems_hit": [],
+    "event_count": 0,
+    "critical_count": 0,
+    "error_count": 0,
+    "warning_count": 0,
+    "info_count": 0
+  },
+  "ascii_diagram": "",
+  "_mock_llm_responses": [
+    {
+      "content": "No events found in cascade. Cannot determine root cause.",
+      "tool_calls": [],
+      "stop_reason": "stop"
+    }
+  ]
+}

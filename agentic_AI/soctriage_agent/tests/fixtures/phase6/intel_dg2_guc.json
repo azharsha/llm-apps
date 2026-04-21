@@ -1,0 +1,51 @@
+{
+  "root_cause": {
+    "event_id": 1,
+    "event_type": "firmware_fail",
+    "subsystem": "firmware",
+    "severity": "error",
+    "confidence": 0.85,
+    "start_line": 1,
+    "end_line": 5,
+    "raw_text": "i915 0000:03:00.0: GuC firmware i915/dg2_guc_70.bin failed"
+  },
+  "cascade": [
+    {
+      "from": "firmware_fail",
+      "to": "gpu_hang",
+      "relation": "causes",
+      "confidence": 0.95,
+      "reasoning": "GuC submission engine offline -> all rings timeout"
+    }
+  ],
+  "summary": {
+    "chip_gen": "intel_gen12",
+    "arch": "x86_64",
+    "kernel_ver": "6.1.0",
+    "severity": "error",
+    "subsystems_hit": ["firmware", "gpu"],
+    "event_count": 2,
+    "critical_count": 0,
+    "error_count": 2,
+    "warning_count": 0,
+    "info_count": 0
+  },
+  "ascii_diagram": "[1] firmware_fail (firmware) --causes(0.95)--> [2] gpu_hang (gpu)",
+  "_mock_llm_responses": [
+    {
+      "content": null,
+      "tool_calls": [{"id": "tc1", "tool_name": "get_root_cause", "arguments": {}}],
+      "stop_reason": "tool_calls"
+    },
+    {
+      "content": null,
+      "tool_calls": [{"id": "tc2", "tool_name": "get_known_issues", "arguments": {}}],
+      "stop_reason": "tool_calls"
+    },
+    {
+      "content": "{\"root_cause_narrative\": \"GuC firmware failed to load on Intel DG2, causing GPU hang.\", \"fix_suggestions\": [\"Update linux-firmware to >= 20231030\", \"Set i915.enable_guc=3 in kernel parameters\"], \"known_issues_matched\": [], \"confidence\": 0.88, \"subsystem_narrative\": \"Firmware: GuC load failure. GPU: ring timeout.\"}",
+      "tool_calls": [],
+      "stop_reason": "stop"
+    }
+  ]
+}

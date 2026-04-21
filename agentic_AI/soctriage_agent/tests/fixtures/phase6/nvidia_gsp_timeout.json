@@ -1,0 +1,46 @@
+{
+  "root_cause": {
+    "event_id": 1,
+    "event_type": "firmware_fail",
+    "subsystem": "firmware",
+    "severity": "error",
+    "confidence": 0.87,
+    "start_line": 1,
+    "end_line": 5,
+    "raw_text": "nvidia 0000:01:00.0: GSP firmware timeout"
+  },
+  "cascade": [
+    {
+      "from": "firmware_fail",
+      "to": "gpu_hang",
+      "relation": "causes",
+      "confidence": 0.90,
+      "reasoning": "GSP firmware fail -> all NVKM channels dead"
+    }
+  ],
+  "summary": {
+    "chip_gen": "nvidia_h100",
+    "arch": "x86_64",
+    "kernel_ver": "6.2.0",
+    "severity": "error",
+    "subsystems_hit": ["firmware", "gpu"],
+    "event_count": 2,
+    "critical_count": 0,
+    "error_count": 2,
+    "warning_count": 0,
+    "info_count": 0
+  },
+  "ascii_diagram": "[1] firmware_fail (firmware) --causes(0.90)--> [2] gpu_hang (gpu)",
+  "_mock_llm_responses": [
+    {
+      "content": null,
+      "tool_calls": [{"id": "tc1", "tool_name": "get_root_cause", "arguments": {}}],
+      "stop_reason": "tool_calls"
+    },
+    {
+      "content": "{\"root_cause_narrative\": \"NVIDIA H100 GSP firmware timed out, causing all NVKM channels to become dead.\", \"fix_suggestions\": [\"Update nvidia-firmware to >= 525.105.17\", \"Set NVreg_EnableGpuFirmware=0 as temporary workaround\"], \"known_issues_matched\": [], \"confidence\": 0.87, \"subsystem_narrative\": \"Firmware: GSP timeout. GPU: channel hang.\"}",
+      "tool_calls": [],
+      "stop_reason": "stop"
+    }
+  ]
+}
