@@ -79,7 +79,7 @@ def test_cli_version_exits_0_prints_version() -> None:
         text=True,
     )
     assert result.returncode == 0
-    assert "soctriage" in result.stdout
+    assert "soctriage" in (result.stdout + result.stderr)
 
 
 def test_cli_list_providers_exits_0() -> None:

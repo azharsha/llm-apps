@@ -44,7 +44,7 @@ jobs:
         run: ruff check soctriage/ tests/
 
       - name: pip-audit (security scan)
-        run: pip install pip-audit && pip-audit --desc on || true
+        run: pip install pip-audit && pip-audit --desc on
 
       - name: Run benchmarks
         run: pytest benchmarks/ --benchmark-only --benchmark-json=bench.json -q

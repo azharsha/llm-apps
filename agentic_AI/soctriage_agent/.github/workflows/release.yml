@@ -35,8 +35,10 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t "sdmove/soctriage:${{ github.ref_name }}" .
-          docker build -t "sdmove/soctriage:latest" .
+          docker build \
+            -t "sdmove/soctriage:${{ github.ref_name }}" \
+            -t "sdmove/soctriage:latest" \
+            .
 
       - name: Push Docker image
         env:

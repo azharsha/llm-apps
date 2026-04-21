@@ -41,8 +41,7 @@ def test_bench_input_handler(benchmark):  # type: ignore[no-untyped-def]
 
 @pytest.mark.benchmark(group="phase2")
 def test_bench_tokenize(benchmark, registry: TokenRuleRegistry) -> None:  # type: ignore[no-untyped-def]
-    line_iter, _ = open_log(str(FIXTURE_AMD))
-    benchmark(lambda: list(tokenize(line_iter, rule_registry=registry)))
+    benchmark(lambda: list(tokenize(open_log(str(FIXTURE_AMD))[0], rule_registry=registry)))
 
 
 @pytest.mark.benchmark(group="phase4")
