@@ -233,15 +233,14 @@ def test_all_tools_have_description():
         assert len(tool.description) > 5
 
 
-def test_all_tools_have_openai_schema():
+def test_all_tools_have_anthropic_schema():
     reg = ToolRegistry()
     for tool in reg.all_tools():
-        schema = tool.to_openai_schema()
-        assert schema["type"] == "function"
-        assert "function" in schema
-        assert "name" in schema["function"]
-        assert "description" in schema["function"]
-        assert "parameters" in schema["function"]
+        schema = tool.to_anthropic_schema()
+        assert "name"         in schema
+        assert "description"  in schema
+        assert "input_schema" in schema
+        assert schema["input_schema"]["type"] == "object"
 
 
 def test_tool_raw_text_excerpt_capped_at_800_chars():

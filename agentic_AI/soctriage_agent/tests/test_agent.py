@@ -85,16 +85,16 @@ def _empty_cascade() -> CascadeResult:
 
 def _stop_response(content: str) -> LLMResponse:
     return LLMResponse(
-        content=content, tool_calls=[], stop_reason="stop", usage={}
+        content=content, tool_calls=[], stop_reason="end_turn", usage={}
     )
 
 
 def _tool_call_response(tool_name: str = "get_root_cause", args: dict | None = None,
-                         tc_id: str = "tc1") -> LLMResponse:
+                         tc_id: str = "toolu_01") -> LLMResponse:
     return LLMResponse(
         content=None,
         tool_calls=[ToolCallRequest(id=tc_id, tool_name=tool_name, arguments=args or {})],
-        stop_reason="tool_calls",
+        stop_reason="tool_use",
         usage={},
     )
 
@@ -111,7 +111,7 @@ _FINAL_JSON = json.dumps({
 def _make_mock_llm(responses: list[LLMResponse]) -> MagicMock:
     mock = MagicMock()
     mock.chat.side_effect = responses
-    mock._model           = "gpt-4o"
+    mock._model           = "claude-sonnet-4-5"
     return mock
 
 
@@ -251,7 +251,7 @@ def test_ec28_llm_timeout_fallback():
     cascade  = _make_cascade()
     mock_llm = MagicMock()
     mock_llm.chat.side_effect = Exception("timeout")
-    mock_llm._model = "gpt-4o"
+    mock_llm._model = "claude-sonnet-4-5"
     agent    = SoCTriageAgent(mock_llm, ToolRegistry())
     result   = agent.run(cascade)
     assert isinstance(result, AgentResult)
@@ -277,7 +277,7 @@ def test_ec30_max_iterations_enforced():
     # Always return a tool call response — agent must stop at 8
     mock_llm = MagicMock()
     mock_llm.chat.return_value = _tool_call_response("get_root_cause")
-    mock_llm._model = "gpt-4o"
+    mock_llm._model = "claude-sonnet-4-5"
     agent  = SoCTriageAgent(mock_llm, ToolRegistry())
     result = agent.run(cascade)
     assert isinstance(result, AgentResult)
@@ -482,14 +482,13 @@ def test_run_agent_no_llm_flag():
     assert result.llm_backend == "none"
 
 
-def test_run_agent_openai_backend():
-    """run_agent with openai backend calls OpenAIClient (mocked)."""
+def test_run_agent_anthropic_backend():
+    """run_agent with anthropic backend calls AnthropicClient (mocked)."""
     cascade = _make_cascade()
     mock_llm_instance = _make_mock_llm([_stop_response(_FINAL_JSON)])
 
-    # OpenAIClient is lazily imported inside run_agent from soctriage.core.llm_client
-    with patch("soctriage.core.llm_client.OpenAIClient", return_value=mock_llm_instance):
-        result = run_agent(cascade, backend="openai", model="gpt-4o")
+    with patch("soctriage.core.agent.AnthropicClient", return_value=mock_llm_instance):
+        result = run_agent(cascade, backend="anthropic", model="claude-sonnet-4-5")
 
     assert isinstance(result, AgentResult)
     assert result.no_llm_mode is False
@@ -500,8 +499,7 @@ def test_run_agent_ollama_backend():
     cascade = _make_cascade()
     mock_llm_instance = _make_mock_llm([_stop_response(_FINAL_JSON)])
 
-    # OllamaClient is lazily imported inside run_agent from soctriage.core.llm_client
-    with patch("soctriage.core.llm_client.OllamaClient", return_value=mock_llm_instance):
+    with patch("soctriage.core.agent.OllamaClient", return_value=mock_llm_instance):
         result = run_agent(cascade, backend="ollama", model="llama3:8b")
 
     assert isinstance(result, AgentResult)
@@ -524,10 +522,10 @@ def test_run_agent_returns_agent_result_type():
 
 
 def test_length_stop_reason_returns_partial_result():
-    """stop_reason='length' should break loop and return partial result."""
+    """stop_reason='max_tokens' should break loop and return partial result."""
     cascade  = _make_cascade()
     mock_llm = _make_mock_llm([
-        LLMResponse(content="partial truncated text", tool_calls=[], stop_reason="length", usage={})
+        LLMResponse(content="partial truncated text", tool_calls=[], stop_reason="max_tokens", usage={})
     ])
     agent  = SoCTriageAgent(mock_llm, ToolRegistry())
     result = agent.run(cascade)
@@ -564,7 +562,7 @@ def test_llm_exception_does_not_leak_error_message():
     cascade  = _make_cascade()
     mock_llm = MagicMock()
     mock_llm.chat.side_effect = Exception("Authentication failed: invalid API key sk-secret123")
-    mock_llm._model = "gpt-4o"
+    mock_llm._model = "claude-sonnet-4-5"
     agent  = SoCTriageAgent(mock_llm, ToolRegistry())
     result = agent.run(cascade)
     assert result.no_llm_mode is True

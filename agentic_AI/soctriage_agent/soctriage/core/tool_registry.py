@@ -39,17 +39,14 @@ class Tool:
     parameters:  dict        # JSON Schema "properties" dict
     fn:          Callable    # fn(ctx, **kwargs) -> dict | list | str
 
-    def to_openai_schema(self) -> dict:
+    def to_anthropic_schema(self) -> dict:
         return {
-            "type": "function",
-            "function": {
-                "name": self.name,
-                "description": self.description,
-                "parameters": {
-                    "type":       "object",
-                    "properties": self.parameters,
-                    "required":   list(self.parameters.keys()),
-                },
+            "name":         self.name,
+            "description":  self.description,
+            "input_schema": {
+                "type":       "object",
+                "properties": self.parameters,
+                "required":   list(self.parameters.keys()),
             },
         }
 

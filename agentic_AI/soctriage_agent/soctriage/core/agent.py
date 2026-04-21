@@ -19,7 +19,7 @@ from soctriage.core.cascade       import CascadeResult
 from soctriage.core.agent_result  import AgentResult, ToolCall
 from soctriage.core.tool_registry import AgentContext, ToolRegistry
 from soctriage.core.prompts       import _build_system_message, USER_PROMPT
-from soctriage.core.llm_client    import LLMClient, LLMResponse
+from soctriage.core.llm_client    import LLMClient, LLMResponse, AnthropicClient, OllamaClient
 
 __all__ = ["SoCTriageAgent", "run_agent", "_fallback_agent_result", "_parse_agent_result"]
 
@@ -67,8 +67,8 @@ def _parse_agent_result(
     tool_trace: list[ToolCall],
     iterations: int,
     total_ms:   int,
-    llm_backend: str = "openai",
-    llm_model:   str = "gpt-4o",
+    llm_backend: str = "anthropic",
+    llm_model:   str = "claude-sonnet-4-5",
 ) -> AgentResult:
     """
     Parse the LLM's final response (JSON or free-text) into an AgentResult.
@@ -196,7 +196,7 @@ class SoCTriageAgent:
                 iterations += 1
                 resp: LLMResponse = self._llm.chat(messages, self._tools.all_tools())
 
-                if resp.stop_reason == "tool_calls" and resp.tool_calls:
+                if resp.stop_reason == "tool_use" and resp.tool_calls:
                     results: list[dict] = []
                     for tc_req in resp.tool_calls:
                         t0 = time.perf_counter_ns()
@@ -211,31 +211,33 @@ class SoCTriageAgent:
                         ))
                         results.append(result)
 
-                    # Append assistant turn with tool_calls
+                    # Anthropic: assistant turn carries tool_use content blocks
                     messages.append({
-                        "role":       "assistant",
-                        "content":    None,
-                        "tool_calls": [
+                        "role":    "assistant",
+                        "content": [
                             {
-                                "id":       tc.id,
-                                "type":     "function",
-                                "function": {
-                                    "name":      tc.tool_name,
-                                    "arguments": json.dumps(tc.arguments),
-                                },
+                                "type":  "tool_use",
+                                "id":    tc.id,
+                                "name":  tc.tool_name,
+                                "input": tc.arguments,
                             }
                             for tc in resp.tool_calls
                         ],
                     })
-                    # Append each tool result separately
-                    for tc_req, result in zip(resp.tool_calls, results):
-                        messages.append({
-                            "role":         "tool",
-                            "tool_call_id": tc_req.id,
-                            "content":      json.dumps(result),
-                        })
+                    # Anthropic: tool results go in a user message as tool_result blocks
+                    messages.append({
+                        "role":    "user",
+                        "content": [
+                            {
+                                "type":        "tool_result",
+                                "tool_use_id": tc_req.id,
+                                "content":     json.dumps(result, default=str),
+                            }
+                            for tc_req, result in zip(resp.tool_calls, results)
+                        ],
+                    })
 
-                elif resp.stop_reason == "stop" and resp.content:
+                elif resp.stop_reason == "end_turn" and resp.content:
                     final_text = resp.content
                     break
 
@@ -268,8 +270,8 @@ def run_agent(
     cascade:     CascadeResult,
     provider:    Any  = None,
     *,
-    backend:     str  = "openai",
-    model:       str  = "gpt-4o",
+    backend:     str  = "anthropic",
+    model:       str  = "claude-sonnet-4-5",
     ollama_host: str  = "http://localhost:11434",
     no_llm:      bool = False,
 ) -> AgentResult:
@@ -279,17 +281,15 @@ def run_agent(
     Instantiates the correct LLMClient, builds the agent, runs the loop.
 
     When no_llm=True, returns _fallback_agent_result immediately without
-    importing openai or httpx.
+    importing anthropic or httpx.
     """
-    if no_llm:
+    if no_llm or backend == "none":
         return _fallback_agent_result(cascade)
 
     if backend == "ollama":
-        from soctriage.core.llm_client import OllamaClient
         client: LLMClient = OllamaClient(model=model, host=ollama_host)
     else:
-        from soctriage.core.llm_client import OpenAIClient
-        client = OpenAIClient(model=model)
+        client = AnthropicClient(model=model)
 
     registry = ToolRegistry()
     agent    = SoCTriageAgent(client, registry, provider=provider)
