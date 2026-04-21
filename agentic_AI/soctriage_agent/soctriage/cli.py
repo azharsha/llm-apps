@@ -2,25 +2,36 @@
 cli.py — SoCTriage command-line interface.
 
 Entry point: main()
-Pipeline: open_log → tokenize → assemble → classify_all → analyse → render → output
+Pipeline: open_log → tokenize → assemble → classify_all → decode_hardware
+          → analyse → run_agent → report → output
 """
 
 from __future__ import annotations
 
 import argparse
 import itertools
+import json
 import logging
 import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from soctriage.core.agent import run_agent
+
 if TYPE_CHECKING:
     from soctriage.core.token_rule import TokenRule
+    from soctriage.core.agent_result import AgentResult
 
 EXIT_SUCCESS    = 0
 EXIT_NO_ANOMALY = 1
 EXIT_PARSE_ERR  = 2
 EXIT_INPUT_ERR  = 3
+
+# Phase 7 semantic aliases
+EXITOK       = EXIT_SUCCESS   # 0
+EXITCRITICAL = 1
+EXITERROR    = 2
+EXITUSAGE    = 3
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -32,9 +43,9 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Input log file path, or - for stdin")
     p.add_argument("--output",         type=str, metavar="PATH",
                    help="Output report base path (extension added per --format)")
-    p.add_argument("--format",         type=str, default="both",
-                   choices=["json", "markdown", "both"],
-                   help="Output format (default: both)")
+    p.add_argument("--format", dest="fmt", type=str, default=None,
+                   choices=["json", "markdown", "html"],
+                   help="Output format (default: json)")
     p.add_argument("--verbose",        action="store_true",
                    help="Enable debug output")
     p.add_argument("--llm",            action="store_true",
@@ -55,6 +66,25 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--plugin", dest="plugin_files", action="append", default=[],
                    metavar="PATH",
                    help="Load a Python plugin file containing @register_rule rules. Repeatable.")
+    # Phase 7: positional LOG_FILE
+    p.add_argument(
+        "log_file", nargs="?", default=None, metavar="LOG_FILE",
+        help="Kernel log file (.log .gz .bz2 .xz) or - for stdin",
+    )
+    # LLM control
+    p.add_argument("--no-llm", action="store_true",
+                   help="Skip LLM agent — Phase 4 cascade only")
+    p.add_argument("--llm-backend", choices=["anthropic", "ollama"],
+                   default="anthropic", dest="llm_backend")
+    p.add_argument("--llm-model", default="claude-sonnet-4-5",
+                   metavar="MODEL", dest="llm_model")
+    p.add_argument("--ollama-host", default="http://localhost:11434",
+                   metavar="URL", dest="ollama_host")
+    p.add_argument("--timeout", type=int, default=60, metavar="SECS")
+    p.add_argument("--include-raw", action="store_true", dest="include_raw",
+                   help="Include raw event text in JSON output")
+    p.add_argument("--version", action="store_true",
+                   help="Show soctriage version and exit")
     return p
 
 
@@ -77,7 +107,7 @@ def _parse_inline_rule(rule_str: str) -> "TokenRule":  # noqa: F821
     )
 
 
-def _build_registry():
+def _build_registry() -> "ProviderRegistry":  # type: ignore[name-defined]
     """Instantiate ProviderRegistry and auto-discover all providers."""
     from soctriage.core.provider_registry import ProviderRegistry
     registry = ProviderRegistry()
@@ -86,9 +116,21 @@ def _build_registry():
     return registry
 
 
-def main() -> None:
+def _exit_code(agent_result: "AgentResult") -> int:
+    if agent_result.cascade.severity == "critical":
+        return EXITCRITICAL
+    return EXITOK
+
+
+def _vlog(verbose: bool, msg: str) -> None:
+    if verbose:
+        import time
+        print(f"[{time.strftime('%H:%M:%S')}] {msg}", file=sys.stderr)
+
+
+def main(argv: list | None = None) -> int:
     parser = build_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     # ── Logging ───────────────────────────────────────────────────────────────
     logging.basicConfig(
@@ -96,46 +138,53 @@ def main() -> None:
         format="%(levelname)s %(name)s: %(message)s",
     )
 
+    # ── --version ─────────────────────────────────────────────────────────────
+    if args.version:
+        try:
+            import importlib.metadata
+            ver = importlib.metadata.version("soctriage")
+        except Exception:
+            ver = "dev"
+        print(f"soctriage {ver}")
+        return EXITOK
+
     # ── --list-providers ──────────────────────────────────────────────────────
     if args.list_providers:
-        registry = _build_registry()
-        names = registry.list_providers()
-        if names:
+        from soctriage.providers import get_all_providers
+        providers = get_all_providers()
+        if providers:
             print("Registered providers:")
-            for name in names:
-                print(f"  {name}")
+            for p in providers:
+                print(f"  {p.name()}")
         else:
             print("No providers registered.")
-        sys.exit(EXIT_SUCCESS)
+        return EXITOK
 
-    # ── Input required ────────────────────────────────────────────────────────
-    if not args.input:
-        parser.error("--input is required (use - for stdin)")
+    # ── Resolve log path (positional or --input fallback) ─────────────────────
+    log_path = args.log_file or getattr(args, "input", None)
+    if not log_path:
+        parser.error("LOG_FILE or --input is required (use - for stdin)")
+        return EXITUSAGE
 
     # ── Phase 1: open log ─────────────────────────────────────────────────────
     from soctriage.core.input_handler import open_log, InputError
 
     try:
-        lines, meta = open_log(args.input)
+        lines, meta = open_log(log_path)
     except FileNotFoundError as exc:
         print(f"soctriage: error: {exc}", file=sys.stderr)
-        sys.exit(EXIT_INPUT_ERR)
+        return EXITERROR
     except InputError as exc:
         print(f"soctriage: input error {exc.code}: {exc.message}", file=sys.stderr)
-        sys.exit(EXIT_INPUT_ERR)
+        return EXITERROR
 
-    if args.verbose:
-        print(
-            f"[input] source={meta.source_path}  "
-            f"size={meta.size_bytes}B  "
-            f"compression={meta.compression or 'none'}  "
-            f"container={meta.container_hint or 'no'}",
-            file=sys.stderr,
-        )
+    _vlog(args.verbose,
+          f"[input] source={meta.source_path}  "
+          f"size={meta.size_bytes}B  "
+          f"compression={meta.compression or 'none'}  "
+          f"container={meta.container_hint or 'no'}")
 
     # ── Buffer head lines for provider detection ──────────────────────────────
-    # Provider detection needs a string, but open_log returns a generator.
-    # Buffer the first HEAD_LINES lines, join for detection, then chain back.
     HEAD_LINES = 500
     head_buf: list[str] = []
     line_iter = iter(lines)
@@ -151,7 +200,6 @@ def main() -> None:
     registry = _build_registry()
 
     if args.soc_provider:
-        # Force a specific provider by name (case-insensitive substring match)
         wanted = args.soc_provider.lower()
         matched = next(
             (p for p in registry._providers if wanted in p.name().lower()),
@@ -163,13 +211,12 @@ def main() -> None:
                 f"Available: {registry.list_providers()}",
                 file=sys.stderr,
             )
-            sys.exit(EXIT_PARSE_ERR)
+            return EXITUSAGE
         provider = matched
     else:
         provider = registry.detect_provider(head_text)
 
-    if args.verbose:
-        print(f"[provider] selected: {provider.name()}", file=sys.stderr)
+    _vlog(args.verbose, f"[provider] selected: {provider.name()}")
 
     # ── Phase 2: tokenize (with plugin rules + inline rules) ─────────────────
     from soctriage.core.token_rule import TokenRuleRegistry
@@ -198,57 +245,77 @@ def main() -> None:
 
     events = list(classify_all(assemble(tokens, provider=provider), provider=provider))
 
-    if args.verbose:
-        print(f"[assembler] {len(events)} events assembled", file=sys.stderr)
+    _vlog(args.verbose, f"[assembler] {len(events)} events assembled")
 
     if not events:
         print("soctriage: no anomaly events found in log.", file=sys.stderr)
-        sys.exit(EXIT_NO_ANOMALY)
+        return EXIT_NO_ANOMALY
+
+    # ── Phase 3c: hardware decode ─────────────────────────────────────────────
+    from soctriage.core.hardware_decode import decode_hardware
+
+    events = decode_hardware(events, provider=provider)
 
     # ── Phase 4: cascade analysis ─────────────────────────────────────────────
     from soctriage.core.cascade import analyse
     from soctriage.core.ascii_diagram import render as render_diagram
 
-    result = analyse(events, provider=provider)
+    result = analyse(events)
     result.ascii_diagram = render_diagram(result)
 
-    if args.verbose:
-        print(
-            f"[cascade] root_cause_id={result.root_cause_id}  "
-            f"edges={len(result.edges)}  "
-            f"severity={result.severity}  "
-            f"analysis_ns={result.analysis_ns}",
-            file=sys.stderr,
+    _vlog(args.verbose,
+          f"[cascade] root_cause_id={result.root_cause_id}  "
+          f"edges={len(result.edges)}  "
+          f"severity={result.severity}  "
+          f"analysis_ns={result.analysis_ns}")
+
+    # ── Phase 6: agent ────────────────────────────────────────────────────────
+    try:
+        agent_result = run_agent(
+            result,
+            provider=provider,
+            backend=args.llm_backend,
+            model=args.llm_model,
+            ollama_host=args.ollama_host,
+            no_llm=args.no_llm,
         )
+    except Exception as exc:
+        print(f"soctriage: agent error: {exc}", file=sys.stderr)
+        return EXITERROR
 
-    # ── Output ────────────────────────────────────────────────────────────────
-    from soctriage.core.reporter import render_json, render_markdown
+    # ── Phase 7: report ───────────────────────────────────────────────────────
+    from soctriage.core.reporter import report
 
-    fmt = args.format
+    fmt = args.fmt or "json"
+    output_path = getattr(args, "output", None)
 
-    if args.output:
-        out_base = Path(args.output)
-        if fmt in ("json", "both"):
-            out_path = out_base.with_suffix(".json")
-            out_path.write_text(render_json(result), encoding="utf-8")
-            if args.verbose:
-                print(f"[output] JSON written to {out_path}", file=sys.stderr)
-        if fmt in ("markdown", "both"):
-            out_path = out_base.with_suffix(".md")
-            out_path.write_text(render_markdown(result), encoding="utf-8")
-            if args.verbose:
-                print(f"[output] Markdown written to {out_path}", file=sys.stderr)
-    else:
-        # No output path — write to stdout
-        if fmt in ("json", "both"):
-            print(render_json(result))
-        if fmt in ("markdown", "both"):
-            if fmt == "both":
-                print("\n---\n")  # separator between JSON and Markdown on stdout
-            print(render_markdown(result))
+    try:
+        rendered = report(
+            agent_result,
+            fmt=fmt,
+            output=output_path,
+            include_raw=getattr(args, "include_raw", False),
+        )
+        # If output was requested but file write silently failed (report wraps errors),
+        # check if the rendered is an error JSON and the file doesn't exist
+        if output_path and not Path(output_path).exists():
+            # report() caught a file-write exception — propagate as EXITERROR
+            try:
+                err_data = json.loads(rendered)
+                if "error" in err_data:
+                    print(f"soctriage: output error: {err_data['error']}", file=sys.stderr)
+                    return EXITERROR
+            except Exception:
+                pass
+    except Exception as exc:
+        print(f"soctriage: report error: {exc}", file=sys.stderr)
+        return EXITERROR
 
-    sys.exit(EXIT_SUCCESS)
+    if not output_path:
+        print(rendered)
+
+    return _exit_code(agent_result)
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

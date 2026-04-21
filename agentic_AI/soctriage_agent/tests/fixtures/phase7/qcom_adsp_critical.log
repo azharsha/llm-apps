@@ -1,0 +1,6 @@
+[  0.000000] Linux version 6.8.0-45-generic
+[  2.000000] qcom-q6v5-mss 4080000.remoteproc: ADSP crash detected
+[  2.000001] qcom-q6v5-mss 4080000.remoteproc: subsys-restart: Resetting the msm
+[  2.000002] BUG: unable to handle kernel NULL pointer dereference
+[  2.000003] kernel panic - not syncing: Fatal exception in interrupt
+[  2.000004] qcom-q6v5-mss: ADSP state=SSR

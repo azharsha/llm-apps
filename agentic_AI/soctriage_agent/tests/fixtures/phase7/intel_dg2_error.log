@@ -1,0 +1,5 @@
+[  0.000000] Linux version 6.8.0-45-generic
+[  0.500000] i915 0000:00:02.0: [drm] GuC firmware failed to load
+[  0.500001] i915 0000:00:02.0: GPU HANG: ecode 12:0:00000000
+[  0.500002] i915 0000:00:02.0: [drm] ERROR GuC initialization failed
+[  0.500003] i915 0000:00:02.0: GuC firmware i915/dg2_guc_70.bin failed

@@ -191,3 +191,144 @@ def render_markdown(result: "CascadeResult") -> str:  # type: ignore[name-define
         lines.append("")
 
     return "\n".join(lines)
+
+
+# ── Phase 7 additions ────────────────────────────────────────────────────────
+
+from soctriage.core.agent_result import AgentResult, ToolCall
+from soctriage.core.assembler    import LogEvent
+
+OUTPUTSCHEMA: dict = {
+    "version":           str,
+    "soctriage_version": str,
+    "provider":          str,
+    "chip_gen":          str,
+    "arch":              str,
+    "kernel_ver":        str,
+    "severity":          str,
+    "events":            list,
+    "cascade":           dict,
+    "ascii_diagram":     str,
+    "root_cause":        str,
+    "fix":               list,
+    "known_issues":      list,
+    "confidence":        float,
+    "llm_backend":       str,
+    "llm_model":         str,
+    "tool_trace":        list,
+    "hardware":          list,
+    "analysis_ms":       int,
+}
+
+
+def report(
+    agent_result: "AgentResult",
+    *,
+    fmt:         str        = "json",
+    output:      str | None = None,
+    pretty:      bool       = True,
+    include_raw: bool       = False,
+) -> str:
+    """
+    Unified report() wrapper — implements the Phase 0 XFAIL-06 stub.
+    Returns rendered string. Writes to output path when output is set.
+    Never raises — returns minimal error JSON on failure.
+    """
+    try:
+        if fmt == "markdown":
+            rendered = _to_markdown(agent_result)
+        elif fmt == "html":
+            from soctriage.core.html_renderer import render_html
+            rendered = render_html(agent_result)
+        else:
+            rendered = _to_json(agent_result, pretty=pretty, include_raw=include_raw)
+
+        if output:
+            with open(output, "w", encoding="utf-8") as fh:
+                fh.write(rendered)
+        return rendered
+
+    except Exception as exc:
+        import json as _json
+        return _json.dumps({"error": str(exc), "version": "1.0"}, indent=2)
+
+
+def _to_json(result: "AgentResult", pretty: bool, include_raw: bool) -> str:
+    import json, importlib.metadata
+    try:
+        soctriage_ver = importlib.metadata.version("soctriage")
+    except Exception:
+        soctriage_ver = "dev"
+
+    cascade = result.cascade
+    doc = {
+        "version":           "1.0",
+        "soctriage_version": soctriage_ver,
+        "provider":          cascade.events[0].provider_name if cascade.events else "generic",
+        "chip_gen":          cascade.chip_gen,
+        "arch":              cascade.arch,
+        "kernel_ver":        cascade.kernel_ver or "unknown",
+        "severity":          cascade.severity,
+        "events":            [_event_to_dict(e, include_raw) for e in cascade.events],
+        "cascade":           cascade.to_dict(),
+        "ascii_diagram":     cascade.ascii_diagram,
+        "root_cause":        result.root_cause_narrative,
+        "fix":               result.fix_suggestions,
+        "known_issues":      result.known_issues_matched,
+        "confidence":        round(result.confidence, 4),
+        "llm_backend":       result.llm_backend,
+        "llm_model":         result.llm_model,
+        "tool_trace":        [_tool_call_to_dict(tc) for tc in result.tool_trace],
+        "hardware": [
+            hw.to_dict()
+            for e in cascade.events
+            for hw in [e.__dict__.get("hardware_context")]
+            if hw is not None
+        ],
+        "analysis_ms": result.total_ms,
+    }
+    return json.dumps(doc, indent=2 if pretty else None, default=str)
+
+
+def _to_markdown(result: "AgentResult") -> str:
+    cascade = result.cascade
+    lines = [
+        "# SoCTriage Report",
+        "",
+        f"**chip_gen:** `{cascade.chip_gen}` | "
+        f"**arch:** `{cascade.arch}` | "
+        f"**kernel:** `{cascade.kernel_ver or 'unknown'}`",
+        f"**Severity:** `{cascade.severity.upper()}`",
+        "",
+        "---",
+        "",
+        result.to_markdown(),
+    ]
+    return "\n".join(lines)
+
+
+def _event_to_dict(event: "LogEvent", include_raw: bool) -> dict:
+    d: dict = {
+        "event_id":   event.event_id,
+        "event_type": event.event_type,
+        "subsystem":  event.subsystem,
+        "ip_block":   event.ip_block,
+        "severity":   event.severity,
+        "confidence": round(event.confidence, 4),
+        "start_line": event.start_line,
+        "end_line":   event.end_line,
+        "chip_gen":   event.chip_gen,
+        "arch":       event.arch,
+    }
+    if include_raw:
+        d["raw_text"] = event.raw_text
+    return d
+
+
+def _tool_call_to_dict(tc: "ToolCall") -> dict:
+    return {
+        "index":       tc.call_index,
+        "tool":        tc.tool_name,
+        "args":        tc.arguments,
+        "duration_ms": tc.duration_ms,
+    }

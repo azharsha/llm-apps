@@ -1,0 +1,5 @@
+[  0.000000] Linux version 6.8.0-45-generic
+[  0.800000] NVRM: GPU-00000000:01:00.0: RmInitAdapter failed
+[  0.800001] NVRM: GPU Board/chip detected: XID 79
+[  0.800002] nvidia 0000:01:00.0: GSP firmware failed to initialize
+[  0.800003] NVRM: Xid (PCI:0000:01:00): 79, pid='<unknown>', name=<unknown>

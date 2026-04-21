@@ -1,0 +1,5 @@
+[  0.000000] Linux version 6.8.0-45-generic (buildd@lcy02-amd64-030)
+[  0.000001] BIOS-provided physical RAM map:
+[  0.000002] ACPI: IRQ0 used by override.
+[  0.000003] PCI: Using configuration type 1 for base access
+[  0.000004] clocksource: tsc-early: mask: 0xffffffffffffffff max_cycles: 0x3d8

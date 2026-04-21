@@ -1,0 +1,7 @@
+[  0.000000] Linux version 6.8.0-45-generic
+[  1.234567] amdgpu 0000:03:00.0: amdgpu: MCIL reset failed
+[  1.234568] amdgpu 0000:03:00.0: [drm] amdgpu: firmware_fail detected
+[  1.234569] amdgpu 0000:03:00.0: GPU HANG: ib test failed
+[  1.234570] BUG: unable to handle kernel NULL pointer dereference
+[  1.234571] amdgpu 0000:03:00.0: amdgpu: failed to load firmware
+[  1.234572] kernel panic - not syncing: Fatal exception
