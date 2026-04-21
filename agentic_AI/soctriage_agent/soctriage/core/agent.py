@@ -106,7 +106,13 @@ def _parse_agent_result(
             text = "\n".join(lines)
         data = json.loads(text)
         root_cause_narrative = data.get("root_cause_narrative", final_text)
-        fix_suggestions      = data.get("fix_suggestions", [])
+        raw_suggestions      = data.get("fix_suggestions", [])
+        if isinstance(raw_suggestions, str):
+            fix_suggestions = [raw_suggestions]
+        elif isinstance(raw_suggestions, list):
+            fix_suggestions = raw_suggestions
+        else:
+            fix_suggestions = []
         known_issues_matched = data.get("known_issues_matched", [])
         confidence           = float(data.get("confidence", cascade.root_cause_conf))
         subsystem_narrative  = data.get("subsystem_narrative", "")
@@ -240,8 +246,8 @@ class SoCTriageAgent:
                     break
 
         except Exception as exc:
-            logger.warning("SoCTriageAgent: LLM error — %s", exc)
-            return _fallback_agent_result(cascade, error=str(exc))
+            logger.warning("SoCTriageAgent: LLM error — %s", type(exc).__name__)
+            return _fallback_agent_result(cascade, error="LLM call failed")
 
         total_ms = (time.perf_counter_ns() - start_ns) // 1_000_000
         return _parse_agent_result(

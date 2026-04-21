@@ -256,7 +256,8 @@ def test_ec28_llm_timeout_fallback():
     result   = agent.run(cascade)
     assert isinstance(result, AgentResult)
     assert result.no_llm_mode is True
-    assert "timeout" in result.root_cause_narrative
+    assert result.iterations == 0
+    assert "timeout" not in result.root_cause_narrative  # error text must not leak
 
 
 def test_ec29_no_tool_calls_reprompt():
@@ -520,3 +521,52 @@ def test_run_agent_returns_agent_result_type():
     assert hasattr(result, "tool_trace")
     assert hasattr(result, "llm_backend")
     assert hasattr(result, "no_llm_mode")
+
+
+def test_length_stop_reason_returns_partial_result():
+    """stop_reason='length' should break loop and return partial result."""
+    cascade  = _make_cascade()
+    mock_llm = _make_mock_llm([
+        LLMResponse(content="partial truncated text", tool_calls=[], stop_reason="length", usage={})
+    ])
+    agent  = SoCTriageAgent(mock_llm, ToolRegistry())
+    result = agent.run(cascade)
+    assert isinstance(result, AgentResult)
+    assert result.root_cause_narrative == "partial truncated text"
+    assert result.no_llm_mode is False
+
+
+def test_parse_agent_result_markdown_fence_stripped():
+    """LLM response wrapped in ```json fences should be parsed correctly."""
+    cascade = _make_cascade()
+    fenced  = "```json\n" + _FINAL_JSON + "\n```"
+    result  = _parse_agent_result(fenced, cascade, [], 1, 100)
+    assert result.root_cause_narrative == "GPU hang due to firmware failure."
+    assert result.fix_suggestions == ["Update firmware.", "Check GuC logs."]
+
+
+def test_parse_agent_result_fix_suggestions_string_coerced():
+    """LLM returning fix_suggestions as a string should be wrapped in a list."""
+    cascade = _make_cascade()
+    bad_json = json.dumps({
+        "root_cause_narrative": "firmware timeout",
+        "fix_suggestions": "update the firmware",
+        "confidence": 0.7,
+        "subsystem_narrative": "",
+    })
+    result = _parse_agent_result(bad_json, cascade, [], 1, 100)
+    assert isinstance(result.fix_suggestions, list)
+    assert result.fix_suggestions == ["update the firmware"]
+
+
+def test_llm_exception_does_not_leak_error_message():
+    """Exception message should not appear in root_cause_narrative (no secret leakage)."""
+    cascade  = _make_cascade()
+    mock_llm = MagicMock()
+    mock_llm.chat.side_effect = Exception("Authentication failed: invalid API key sk-secret123")
+    mock_llm._model = "gpt-4o"
+    agent  = SoCTriageAgent(mock_llm, ToolRegistry())
+    result = agent.run(cascade)
+    assert result.no_llm_mode is True
+    assert "sk-secret123" not in result.root_cause_narrative
+    assert "Authentication" not in result.root_cause_narrative
